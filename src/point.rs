@@ -24,6 +24,13 @@ impl Point2D {
     pub fn new(x: isize, y: isize) -> Self {
         Self { x, y }
     }
+
+    pub fn parse(value: &str) -> Self {
+        let mut coords = value.splitn(2, ',');
+        let x = coords.next().unwrap().parse().expect("failed to parse x");
+        let y = coords.next().unwrap().parse().expect("failed to parse y");
+        Self { x, y }
+    }
 }
 
 impl Add for Point2D {
@@ -59,5 +66,33 @@ impl SubAssign for Point2D {
     fn sub_assign(&mut self, other: Self) {
         self.x -= other.x;
         self.y -= other.y;
+    }
+}
+
+#[derive(Clone, Copy)]
+pub struct Point3D {
+    pub x: isize,
+    pub y: isize,
+    pub z: isize,
+}
+
+impl Point3D {
+    pub fn new(x: isize, y: isize, z: isize) -> Self {
+        Self { x, y, z }
+    }
+
+    pub fn parse(value: &str) -> Self {
+        let mut coords = value.splitn(3, ',');
+        let x = coords.next().unwrap().parse().expect("failed to parse x");
+        let y = coords.next().unwrap().parse().expect("failed to parse y");
+        let z = coords.next().unwrap().parse().expect("failed to parse z");
+        Self { x, y, z }
+    }
+
+    pub fn distance_squared(&self, other: Point3D) -> isize {
+        let dx = self.x - other.x;
+        let dy = self.y - other.y;
+        let dz = self.z - other.z;
+        dx * dx + dy * dy + dz * dz
     }
 }

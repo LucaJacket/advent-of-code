@@ -8,3 +8,7 @@ pub fn parse_from_digits(digits: impl IntoIterator<Item = u8>) -> u64 {
         .into_iter()
         .fold(0, |acc, x| acc * 10 + (x - b'0') as u64)
 }
+
+pub fn combinations2(n: usize) -> impl Iterator<Item = (usize, usize)> {
+    (0..n).flat_map(move |i| (i + 1..n).map(move |j| (i, j)))
+}

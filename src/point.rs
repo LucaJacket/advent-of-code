@@ -31,10 +31,14 @@ impl Point2D {
         let y = coords.next().unwrap().parse().expect("failed to parse y");
         Self { x, y }
     }
-    
+
+    pub fn bounds(a: Self, b: Self) -> [isize; 4] {
+        [a.x.min(b.x), a.x.max(b.x), a.y.min(b.y), a.y.max(b.y)]
+    }
+
     pub fn rectangle_area(a: Self, b: Self) -> isize {
-        let base = (a.x - b.x).abs();
-        let height = (a.y - b.y).abs();
+        let base = (a.x - b.x).abs() + 1;
+        let height = (a.y - b.y).abs() + 1;
         base * height
     }
 }
@@ -94,7 +98,7 @@ impl Point3D {
         let z = coords.next().unwrap().parse().expect("failed to parse z");
         Self { x, y, z }
     }
-    
+
     pub fn distance_squared(a: Self, b: Self) -> isize {
         let dx = a.x - b.x;
         let dy = a.y - b.y;

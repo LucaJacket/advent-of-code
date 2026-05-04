@@ -28,7 +28,8 @@ fn part1(input: &str, num_connections: usize) -> usize {
     let junctions: Vec<_> = input.lines().map(Point3D::parse).collect();
     let n = junctions.len();
     let mut connections: Vec<_> = combinations2(n).collect();
-    connections.sort_unstable_by_key(|&(i, j)| junctions[i].distance_squared(junctions[j]));
+    connections
+        .sort_unstable_by_key(|&(i, j)| Point3D::distance_squared(junctions[i], junctions[j]));
 
     let mut union_find = UnionFind::new(n);
     for (i, j) in connections.into_iter().take(num_connections) {
@@ -47,7 +48,8 @@ fn part2(input: &str) -> isize {
     let junctions: Vec<_> = input.lines().map(Point3D::parse).collect();
     let n = junctions.len();
     let mut connections: Vec<_> = combinations2(n).collect();
-    connections.sort_unstable_by_key(|&(i, j)| junctions[i].distance_squared(junctions[j]));
+    connections
+        .sort_unstable_by_key(|&(i, j)| Point3D::distance_squared(junctions[i], junctions[j]));
 
     let mut result = 0;
     let mut union_find = UnionFind::new(n);

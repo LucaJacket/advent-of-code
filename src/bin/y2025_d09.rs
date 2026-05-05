@@ -168,9 +168,9 @@ fn part2(input: &str) -> isize {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use crate::{part1, part2};
 
-    const EXAMPLE_INPUT: &str = "7,1
+    const EXAMPLE: &str = "7,1
 11,1
 11,7
 9,7
@@ -180,12 +180,12 @@ mod tests {
 7,3";
 
     #[test]
-    fn example_part1() {
-        assert_eq!(part1(EXAMPLE_INPUT), 50);
+    fn test_part1_example() {
+        assert_eq!(part1(EXAMPLE), 50);
     }
 
     #[test]
-    fn example_part2() {
-        assert_eq!(part2(EXAMPLE_INPUT), 24);
+    fn test_part2_example() {
+        assert_eq!(part2(EXAMPLE), 24);
     }
 }

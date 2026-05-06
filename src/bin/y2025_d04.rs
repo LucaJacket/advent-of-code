@@ -45,7 +45,7 @@ impl Extension for Grid<u8> {
     }
 
     fn remove(&mut self) -> usize {
-        let accessible: Vec<_> = self.accessible().collect();
+        let accessible = self.accessible().collect::<Vec<_>>();
         for &point in &accessible {
             self[point] = EMPTY;
         }
@@ -60,7 +60,7 @@ fn part1(input: &str) -> usize {
 
 fn part2(input: &str) -> usize {
     let mut grid = Grid::parse(input);
-    repeat_with(|| grid.remove())
+    repeat_with(move || grid.remove())
         .take_while(|&removed| removed > 0)
         .sum()
 }

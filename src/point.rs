@@ -27,8 +27,8 @@ impl Point2D {
 
     pub fn parse(value: &str) -> Self {
         let mut coords = value.splitn(2, ',');
-        let x = coords.next().unwrap().parse::<isize>().expect("x");
-        let y = coords.next().unwrap().parse::<isize>().expect("y");
+        let x = coords.next().unwrap().parse::<isize>().unwrap();
+        let y = coords.next().unwrap().parse::<isize>().unwrap();
         Self { x, y }
     }
 
@@ -93,9 +93,9 @@ impl Point3D {
 
     pub fn parse(value: &str) -> Self {
         let mut coords = value.splitn(3, ',');
-        let x = coords.next().unwrap().parse::<isize>().expect("x");
-        let y = coords.next().unwrap().parse::<isize>().expect("y");
-        let z = coords.next().unwrap().parse::<isize>().expect("z");
+        let x = coords.next().unwrap().parse::<isize>().unwrap();
+        let y = coords.next().unwrap().parse::<isize>().unwrap();
+        let z = coords.next().unwrap().parse::<isize>().unwrap();
         Self { x, y, z }
     }
 

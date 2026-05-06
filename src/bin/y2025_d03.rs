@@ -26,7 +26,7 @@ fn extract_total_power(bank: &[u8], n: usize) -> u64 {
             .iter()
             .zip(*start..)
             .max_by_key(|&(&power, idx)| (power, Reverse(idx)))
-            .expect("power");
+            .unwrap();
         *start = idx + 1;
         Some(power)
     });

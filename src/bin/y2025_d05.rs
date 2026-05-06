@@ -13,6 +13,7 @@
 // - finally, push the current range into the Vec
 //
 
+use std::iter::from_fn;
 use advent_of_code::common::read_input;
 use std::ops::RangeInclusive;
 
@@ -24,15 +25,25 @@ fn main() {
 }
 
 fn parse_range(range: &str) -> RangeInclusive<u64> {
-    let (start, end) = range.split_once('-').expect("failed to parse range");
-    let start = start.parse().expect("failed to parse start");
-    let end = end.parse().expect("failed to parse end");
+    let (start, end) = range.split_once('-').expect("range");
+    let start = start.parse().expect("start");
+    let end = end.parse().expect("end");
     start..=end
 }
 
 fn merge_ranges(ranges: impl IntoIterator<Item = RangeInclusive<u64>>) -> Vec<RangeInclusive<u64>> {
-    let mut sorted: Vec<_> = ranges.into_iter().collect();
+    let mut sorted = ranges.into_iter().collect::<Vec<_>>();
     sorted.sort_unstable_by_key(|range| *range.start());
+    let mut sorted = sorted.into_iter();
+    
+    from_fn(move || {
+        let mut current = sorted.next().expect("range");
+        
+    });
+    
+    sorted.into_iter().fold(Vec::new(), |merged, range| {
+        
+    });
     let mut sorted = sorted.into_iter();
 
     let mut merged = Vec::new();

@@ -24,7 +24,7 @@ const SIZE: i32 = 100;
 
 fn parse_rotation(rotation: &str) -> i32 {
     let (direction, distance) = rotation.split_at(1);
-    let distance = distance.parse::<i32>().expect("distance");
+    let distance = distance.parse::<i32>().unwrap();
     match direction {
         "L" => -distance,
         "R" => distance,

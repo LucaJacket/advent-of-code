@@ -13,7 +13,6 @@
 // - finally, push the current range into the Vec
 //
 
-use std::iter::from_fn;
 use advent_of_code::common::read_input;
 use std::ops::RangeInclusive;
 
@@ -25,28 +24,18 @@ fn main() {
 }
 
 fn parse_range(range: &str) -> RangeInclusive<u64> {
-    let (start, end) = range.split_once('-').expect("range");
-    let start = start.parse().expect("start");
-    let end = end.parse().expect("end");
+    let (start, end) = range.split_once('-').unwrap();
+    let start = start.parse().unwrap();
+    let end = end.parse().unwrap();
     start..=end
 }
 
-fn merge_ranges(ranges: impl IntoIterator<Item = RangeInclusive<u64>>) -> Vec<RangeInclusive<u64>> {
-    let mut sorted = ranges.into_iter().collect::<Vec<_>>();
+fn merge_ranges(ranges: impl Iterator<Item = RangeInclusive<u64>>) -> Vec<RangeInclusive<u64>> {
+    let mut sorted = ranges.collect::<Vec<_>>();
     sorted.sort_unstable_by_key(|range| *range.start());
-    let mut sorted = sorted.into_iter();
-    
-    from_fn(move || {
-        let mut current = sorted.next().expect("range");
-        
-    });
-    
-    sorted.into_iter().fold(Vec::new(), |merged, range| {
-        
-    });
-    let mut sorted = sorted.into_iter();
 
-    let mut merged = Vec::new();
+    let mut merged = Vec::with_capacity(sorted.len());
+    let mut sorted = sorted.into_iter();
     if let Some(first) = sorted.next() {
         let mut current = first;
         for next in sorted {
@@ -59,25 +48,22 @@ fn merge_ranges(ranges: impl IntoIterator<Item = RangeInclusive<u64>>) -> Vec<Ra
         }
         merged.push(current)
     }
+
     merged
 }
 
 fn part1(input: &str) -> usize {
-    let (ranges, ingredients) = input
-        .split_once("\n\n")
-        .expect("failed to split range and ingredients");
+    let (ranges, ingredients) = input.split_once("\n\n").unwrap();
     let ranges: Vec<_> = ranges.lines().map(parse_range).collect();
     ingredients
         .lines()
-        .map(|line| line.parse().expect("failed to parse ingredient"))
+        .map(|line| line.parse().unwrap())
         .filter(|&ingredient| ranges.iter().any(|range| range.contains(&ingredient)))
         .count()
 }
 
 fn part2(input: &str) -> usize {
-    let (ranges, _) = input
-        .split_once("\n\n")
-        .expect("failed to split range and ingredients");
+    let (ranges, _) = input.split_once("\n\n").unwrap();
     merge_ranges(ranges.lines().map(parse_range))
         .into_iter()
         .map(RangeInclusive::count)

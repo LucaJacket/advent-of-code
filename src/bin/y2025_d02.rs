@@ -1,11 +1,10 @@
 //
 // Approach:
-// - parse every range
-// - cast the number into digits (String)
-// - divide the digits in 2 blocks and check if they are equal
+// - parse every range and flatten
+// - for each id: check if id is first block repeated twice
 //
 // Part 2:
-// - just check every possible block size: from 2 to id.len()
+// - check all possible values of block_count
 //
 
 use advent_of_code::common::read_input;

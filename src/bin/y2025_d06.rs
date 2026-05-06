@@ -46,7 +46,10 @@ impl Extension for Grid<u8> {
     {
         (0..self.width)
             .rev()
-            .map(|x| (x, self[Point2D::new(x, self.height - 1)]))
+            .map(|x| {
+                let operator = self[Point2D::new(x, self.height - 1)];
+                (x, operator)
+            })
             .filter(|&(_, operator)| operator == SUM || operator == MULTIPLY)
             .scan(self.width, |end_x, (start_x, operator)| {
                 let operands = operands(start_x, *end_x);

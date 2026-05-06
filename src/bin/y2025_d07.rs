@@ -7,7 +7,8 @@
 //   finally, set current = next
 //
 // Part 2:
-// - just change the encoding from bool to usize to address multiplicity counting
+// - change the encoding from bool to usize to address multiplicity counting
+// - simulate again
 // - finally, sum all the multiplicities in the final state
 //
 
@@ -26,12 +27,12 @@ const SPLITTER: u8 = b'^';
 
 fn part1(input: &str) -> usize {
     let mut lines = input.lines().map(str::as_bytes);
-    let mut current: Vec<_> = lines
+    let mut current = lines
         .next()
-        .expect("grid is empty")
+        .unwrap()
         .iter()
         .map(|&x| x == START)
-        .collect();
+        .collect::<Vec<_>>();
     let mut next = vec![false; current.len()];
     let mut splittings = 0;
     for splitters in lines {
@@ -54,12 +55,12 @@ fn part1(input: &str) -> usize {
 
 fn part2(input: &str) -> usize {
     let mut rows = input.lines().map(str::as_bytes);
-    let mut current: Vec<_> = rows
+    let mut current = rows
         .next()
-        .expect("grid is empty")
+        .unwrap()
         .iter()
         .map(|&x| (x == START) as usize)
-        .collect();
+        .collect::<Vec<_>>();
     let mut next = vec![0; current.len()];
     for row in rows {
         next.fill(0);

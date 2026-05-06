@@ -1,10 +1,12 @@
 //
 // Approach:
-// - parse every rotation to i32 (right -> positive, left -> negative)
-// - use modular arithmetic to detect if dial is on 0
+// - parse every rotation (signed integer: left = negative, right = positive)
+// - apply rotation
+// - detect if dial is on 0 (modular arithmetic)
+// - count
 //
 // Part 2:
-// - just repeat n times a +1 or -1 rotation
+// - repeat n times a +1 or -1 rotation
 //
 
 use advent_of_code::common::read_input;
@@ -22,7 +24,7 @@ const SIZE: i32 = 100;
 
 fn parse_rotation(rotation: &str) -> i32 {
     let (direction, distance) = rotation.split_at(1);
-    let distance: i32 = distance.parse().expect("failed to parse distance");
+    let distance = distance.parse::<i32>().expect("distance");
     match direction {
         "L" => -distance,
         "R" => distance,

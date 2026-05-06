@@ -28,7 +28,7 @@ fn parse_rotation(rotation: &str) -> i32 {
     match direction {
         "L" => -distance,
         "R" => distance,
-        _ => unreachable!("unknown direction"),
+        _ => unreachable!(),
     }
 }
 

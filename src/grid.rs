@@ -19,31 +19,10 @@ impl<T> Grid<T> {
         }
     }
 
-    pub fn find(&self, value: &T) -> Option<Point2D>
-    where
-        T: PartialEq,
-    {
-        self.data
-            .iter()
-            .zip(0..)
-            .find(|&(element, _)| element == value)
-            .map(|(_, i)| Point2D {
-                x: i % self.width,
-                y: i / self.width,
-            })
-    }
-
-    pub fn contains(&self, value: &T) -> bool
-    where
-        T: PartialEq,
-    {
-        self.data.contains(value)
-    }
-
     pub fn coords(&self) -> impl Iterator<Item = Point2D> {
         (0..self.height * self.width).map(|i| Point2D {
-            x: i % self.width,
-            y: i / self.width,
+            x: i.rem_euclid(self.width),
+            y: i.div_euclid(self.width),
         })
     }
 
@@ -82,7 +61,7 @@ impl<T> IndexMut<Point2D> for Grid<T> {
 
 impl Grid<u8> {
     pub fn parse(value: &str) -> Self {
-        let raw: Vec<_> = value.lines().map(str::as_bytes).collect();
+        let raw = value.lines().map(str::as_bytes).collect::<Vec<_>>();
 
         let data = raw.concat();
         let width = raw[0].len() as isize;

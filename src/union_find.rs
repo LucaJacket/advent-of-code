@@ -5,7 +5,7 @@ pub struct UnionFind {
 impl UnionFind {
     pub fn new(n: usize) -> Self {
         Self {
-            parent: (0..n).collect(),
+            parent: (0..n).collect::<Vec<_>>(),
         }
     }
 

@@ -19,20 +19,18 @@ fn main() {
 }
 
 fn parse_range(range: &str) -> RangeInclusive<u64> {
-    let (start, end) = range.split_once('-').expect("failed to parse range");
-    let start = start.parse().expect("failed to parse start");
-    let end = end.parse().expect("failed to parse end");
+    let (start, end) = range.split_once('-').expect("range");
+    let start = start.parse::<u64>().expect("start");
+    let end = end.parse::<u64>().expect("end");
     start..=end
 }
 
-fn is_repeated_block(id: &str, num_blocks: usize) -> bool {
-    if !id.len().is_multiple_of(num_blocks) {
+fn is_repeated_block(id: &str, block_count: usize) -> bool {
+    if !id.len().is_multiple_of(block_count) {
         return false;
     }
-    let block_size = id.len() / num_blocks;
-    (block_size..id.len())
-        .step_by(block_size)
-        .all(|i| id[0..block_size] == id[i..i + block_size])
+    let block = &id[..id.len() / block_count];
+    id == block.repeat(block_count)
 }
 
 fn part1(input: &str) -> u64 {
@@ -52,7 +50,7 @@ fn part2(input: &str) -> u64 {
         .flat_map(parse_range)
         .filter(|&id| {
             let digits = id.to_string();
-            (2..=digits.len()).any(|num_blocks| is_repeated_block(&digits, num_blocks))
+            (2..=digits.len()).any(|block_count| is_repeated_block(&digits, block_count))
         })
         .sum()
 }

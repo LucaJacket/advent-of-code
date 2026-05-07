@@ -1,19 +1,16 @@
 //
 // Approach:
-// - one-hot encode the 1st line (S = true)
-// - for each next line, clean next and for each index:
-//   if current[i] contains a beam and row[i] contains a splitter, increment counter and split
-//   else if current[i] contains a beam, go through
-//   finally, set current = next
+// - one-hot encode the 1st level (S = true)
+// - for each level, compute next state and occurred splittings:
+//   if current[i] contains no beams, skip
+//   if found a splitter, increment counter and split
+//   else go through
 //
 // Part 2:
 // - change the encoding from bool to usize to address multiplicity counting
-// - simulate again
-// - finally, sum all the multiplicities in the final state
 //
 
 use advent_of_code::common::read_input;
-use std::mem::swap;
 
 fn main() {
     let input = read_input(2025, 7);
@@ -24,59 +21,67 @@ fn main() {
 
 const START: u8 = b'S';
 const SPLITTER: u8 = b'^';
+const EMPTY: u8 = b'.';
+
+fn step(current: &[usize], splitters: &[u8]) -> (Vec<usize>, usize) {
+    let mut next = vec![0; current.len()];
+    let mut splittings = 0;
+
+    for i in 0..current.len() {
+        let beams = current[i];
+        if beams == 0 {
+            continue;
+        }
+        match splitters[i] {
+            SPLITTER => {
+                splittings += 1;
+                if i > 0 {
+                    next[i - 1] += beams;
+                }
+                if i + 1 < current.len() {
+                    next[i + 1] += beams;
+                }
+            }
+            EMPTY => next[i] += beams,
+            _ => unreachable!(),
+        }
+    }
+
+    (next, splittings)
+}
 
 fn part1(input: &str) -> usize {
     let mut lines = input.lines().map(str::as_bytes);
-    let mut current = lines
-        .next()
-        .unwrap()
-        .iter()
-        .map(|&x| x == START)
-        .collect::<Vec<_>>();
-    let mut next = vec![false; current.len()];
-    let mut splittings = 0;
-    for splitters in lines {
-        next.fill(false);
-        for i in 0..splitters.len() {
-            if current[i] {
-                if splitters[i] == SPLITTER {
-                    splittings += 1;
-                    next[i - 1] = current[i];
-                    next[i + 1] = current[i];
-                } else {
-                    next[i] = current[i];
-                }
-            }
-        }
-        swap(&mut current, &mut next);
-    }
-    splittings
-}
-
-fn part2(input: &str) -> usize {
-    let mut rows = input.lines().map(str::as_bytes);
-    let mut current = rows
+    let start = lines
         .next()
         .unwrap()
         .iter()
         .map(|&x| (x == START) as usize)
         .collect::<Vec<_>>();
-    let mut next = vec![0; current.len()];
-    for row in rows {
-        next.fill(0);
-        for i in 0..row.len() {
-            if current[i] > 0 {
-                if row[i] == SPLITTER {
-                    next[i - 1] += current[i];
-                    next[i + 1] += current[i];
-                } else {
-                    next[i] += current[i];
-                }
-            }
-        }
-        swap(&mut current, &mut next);
-    }
-    current.into_iter().sum()
+    lines
+        .scan(start, |current, splitters| {
+            let (next, splittings) = step(current, splitters);
+            *current = next;
+            Some(splittings)
+        })
+        .sum()
+}
+
+fn part2(input: &str) -> usize {
+    let mut lines = input.lines().map(str::as_bytes);
+    let start = lines
+        .next()
+        .unwrap()
+        .iter()
+        .map(|&x| (x == START) as usize)
+        .collect::<Vec<_>>();
+    lines
+        .fold(start, |current, splitters| {
+            let (next, _) = step(&current, splitters);
+            next
+        })
+        .into_iter()
+        .sum()
 }
 
 #[cfg(test)]

@@ -6,11 +6,9 @@
 // Part 2:
 // - sort the ranges by start
 // - create a new Vec
-// - set the 1st range as the current range
-// - for each next range:
-//   if it overlaps with the current range, extend the current range
-//   else push the current range into the Vec and set the next range as the current range
-// - finally, push the current range into the Vec
+// - for each range:
+//   if it overlaps with the last range, extend the last range
+//   else add the range
 //
 
 use advent_of_code::common::read_input;
@@ -34,22 +32,16 @@ fn merge_ranges(ranges: impl Iterator<Item = RangeInclusive<u64>>) -> Vec<RangeI
     let mut sorted = ranges.collect::<Vec<_>>();
     sorted.sort_unstable_by_key(|range| *range.start());
 
-    let mut merged = Vec::with_capacity(sorted.len());
-    let mut sorted = sorted.into_iter();
-    if let Some(first) = sorted.next() {
-        let mut current = first;
-        for next in sorted {
-            if current.contains(next.start()) {
-                current = (*current.start())..=(*current.end()).max(*next.end());
-            } else {
-                merged.push(current);
-                current = next;
+    sorted.into_iter().fold(Vec::new(), |mut merged, range| {
+        match merged.last_mut() {
+            Some(current) if current.contains(range.start()) => {
+                let end = (*current.end()).max(*range.end());
+                *current = (*current.start())..=end
             }
+            _ => merged.push(range),
         }
-        merged.push(current)
-    }
-
-    merged
+        merged
+    })
 }
 
 fn part1(input: &str) -> usize {

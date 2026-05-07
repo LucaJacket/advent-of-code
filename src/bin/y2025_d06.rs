@@ -3,16 +3,12 @@
 //
 // Approach:
 // - parse table
-// - from width to 0, find all the columns containing + or * on the last row
-// - each column containing an operator is start_x, while end_x = width
-// - extract operands by row:
-//   for each row, extract the columns between start_x and end_x, then parse the number
-// - apply the operator
-// - update end_x = start_x - 1
+// - split into sub-tables: horizontal bounds are given by operators on last row
+// - for each subtable: extract operator, extract operands (by row), compute result
+// - finally, sum
 //
 // Part 2:
-// - just extract operands by column:
-//   for each column between start_x and end_x, extract the rows, then parse the number
+// - change extract operands (by col)
 //
 
 use advent_of_code::common::{parse_from_digits, read_input};
@@ -30,7 +26,7 @@ const SUM: u8 = b'+';
 const MULTIPLY: u8 = b'*';
 
 trait Extension {
-    fn solve<F, I>(&self, operands: F) -> u64
+    fn solve<F, I>(&self, extract_operands: F) -> u64
     where
         F: Fn(isize, isize) -> I,
         I: Iterator<Item = u64>;
@@ -39,53 +35,51 @@ trait Extension {
 }
 
 impl Extension for Grid<u8> {
-    fn solve<F, I>(&self, operands: F) -> u64
+    fn solve<F, I>(&self, extract_operands: F) -> u64
     where
         F: Fn(isize, isize) -> I,
         I: Iterator<Item = u64>,
     {
         (0..self.width)
             .rev()
-            .map(|x| {
-                let operator = self[Point2D::new(x, self.height - 1)];
-                (x, operator)
+            .filter(|&x| matches!(self[Point2D::new(x, self.height - 1)], SUM | MULTIPLY))
+            .scan(self.width, |right_bound, left_bound| {
+                let horizontal_bounds = (left_bound, *right_bound);
+                *right_bound = left_bound - 1;
+                Some(horizontal_bounds)
             })
-            .filter(|&(_, operator)| operator == SUM || operator == MULTIPLY)
-            .scan(self.width, |end_x, (start_x, operator)| {
-                let operands = operands(start_x, *end_x);
-                let result = match operator {
-                    SUM => operands.sum(),
-                    MULTIPLY => operands.product(),
-                    _ => 0,
-                };
-                *end_x = start_x - 1;
-                Some(result)
+            .map(|(left_bound, right_bound)| {
+                let operator = self[Point2D::new(left_bound, self.height - 1)];
+                let operands = extract_operands(left_bound, right_bound);
+                match operator {
+                    SUM => operands.sum::<u64>(),
+                    MULTIPLY => operands.product::<u64>(),
+                    _ => unreachable!(),
+                }
             })
             .sum()
     }
 
     fn solve_by_rows(&self) -> u64 {
-        let operands_by_row = |start_x, end_x| {
-            (0..self.height - 1)
-                .map(move |y| {
-                    (start_x..end_x)
-                        .map(move |x| self[Point2D::new(x, y)])
-                        .filter(|&digit| digit.is_ascii_digit())
-                })
-                .map(parse_from_digits)
+        let operands_by_row = |left_bound, right_bound| {
+            (0..self.height - 1).map(move |y| {
+                let digits = (left_bound..right_bound)
+                    .map(move |x| self[Point2D::new(x, y)])
+                    .filter(|&digit| digit.is_ascii_digit());
+                parse_from_digits(digits)
+            })
         };
         self.solve(operands_by_row)
     }
 
     fn solve_by_columns(&self) -> u64 {
-        let operands_by_column = |start_x, end_x| {
-            (start_x..end_x)
-                .map(move |x| {
-                    (0..self.height - 1)
-                        .map(move |y| self[Point2D::new(x, y)])
-                        .filter(|&digit| digit.is_ascii_digit())
-                })
-                .map(parse_from_digits)
+        let operands_by_column = |left_bound, right_bound| {
+            (left_bound..right_bound).map(move |x| {
+                let digits = (0..self.height - 1)
+                    .map(move |y| self[Point2D::new(x, y)])
+                    .filter(|&digit| digit.is_ascii_digit());
+                parse_from_digits(digits)
+            })
         };
         self.solve(operands_by_column)
     }

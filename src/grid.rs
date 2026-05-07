@@ -27,7 +27,7 @@ impl<T> Grid<T> {
     }
 
     pub fn is_in_bounds(&self, point: Point2D) -> bool {
-        point.x >= 0 && point.x < self.width && point.y >= 0 && point.y < self.height
+        (0..self.width).contains(&point.x) && (0..self.height).contains(&point.y)
     }
 
     fn neighbors(&self, point: Point2D, dirs: &[Point2D]) -> impl Iterator<Item = Point2D> {

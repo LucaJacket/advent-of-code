@@ -47,7 +47,7 @@ fn part1(input: &str, num_connections: usize) -> usize {
         let root = union_find.find(i);
         sizes[root] += 1;
     }
-    
+
     sizes.sort_unstable_by_key(|&size| Reverse(size));
     sizes.into_iter().take(3).product()
 }

@@ -3,12 +3,14 @@
 //
 // Approach:
 // - parse every junction to Point3D
-// - use UnionFind to track circuits
-// - take first 1000 connections (union)
-// - compute sizes of circuits by addressing the same roots (find)
+// - build connections
+// - use UnionFind to track circuits:
+//   each junction is a node in a graph and each connection is a weighted edge (by distance)
+// - consider only num_connections edges
+// - compute circuit sizes via nodes, since linked nodes all share the same root
 //
 // Part 2:
-// - take all connections (union)
+// - consider all edges
 // - if union was useful, update result
 //
 
@@ -24,40 +26,45 @@ fn main() {
     println!("Part 2: {}", part2(&input));
 }
 
-fn part1(input: &str, num_connections: usize) -> usize {
-    let junctions: Vec<_> = input.lines().map(Point3D::parse).collect();
-    let n = junctions.len();
-    let mut connections: Vec<_> = combinations2(n).collect();
+fn build_connections(junctions: &[Point3D]) -> Vec<(usize, usize)> {
+    let mut connections = combinations2(junctions.len()).collect::<Vec<_>>();
     connections
         .sort_unstable_by_key(|&(i, j)| Point3D::distance_squared(junctions[i], junctions[j]));
 
-    let mut union_find = UnionFind::new(n);
+    connections
+}
+
+fn part1(input: &str, num_connections: usize) -> usize {
+    let junctions = input.lines().map(Point3D::parse).collect::<Vec<_>>();
+    let connections = build_connections(&junctions);
+
+    let mut union_find = UnionFind::new(junctions.len());
     for (i, j) in connections.into_iter().take(num_connections) {
         union_find.union(i, j);
     }
-    let mut sizes = vec![0; n];
-    for i in 0..n {
+    let mut sizes = vec![0; junctions.len()];
+    for i in 0..junctions.len() {
         let root = union_find.find(i);
         sizes[root] += 1;
     }
+    
     sizes.sort_unstable_by_key(|&size| Reverse(size));
     sizes.into_iter().take(3).product()
 }
 
 fn part2(input: &str) -> isize {
-    let junctions: Vec<_> = input.lines().map(Point3D::parse).collect();
-    let n = junctions.len();
-    let mut connections: Vec<_> = combinations2(n).collect();
-    connections
-        .sort_unstable_by_key(|&(i, j)| Point3D::distance_squared(junctions[i], junctions[j]));
+    let junctions = input.lines().map(Point3D::parse).collect::<Vec<_>>();
+    let connections = build_connections(&junctions);
 
     let mut result = 0;
-    let mut union_find = UnionFind::new(n);
+    let mut union_find = UnionFind::new(junctions.len());
+
     for (i, j) in connections.into_iter() {
         if union_find.union(i, j) {
             result = junctions[i].x * junctions[j].x;
         }
     }
+
     result
 }
 

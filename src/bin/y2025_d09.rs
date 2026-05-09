@@ -12,13 +12,12 @@
 // - draw perimeter (the vertices of the polygon are already ordered)
 // - flood fill (BFS) to detect outside
 // - compute summed area table to quickly check if rectangle is valid
-// - to speed up: compute all areas, then sort by decreasing area, then return the first valid one
 //
 
 use advent_of_code::common::{combinations2, read_input};
 use advent_of_code::grid::Grid;
 use advent_of_code::point::Point2D;
-use std::cmp::{PartialEq, Reverse};
+use std::cmp::PartialEq;
 use std::collections::VecDeque;
 
 fn main() {
@@ -42,17 +41,17 @@ struct Compressor {
 
 impl Compressor {
     fn new(points: &[Point2D]) -> Self {
-        let mut unique_x: Vec<_> = points
+        let mut unique_x = points
             .iter()
             .flat_map(|point| [point.x - 1, point.x, point.x + 1])
-            .collect();
+            .collect::<Vec<_>>();
         unique_x.sort_unstable();
         unique_x.dedup();
 
-        let mut unique_y: Vec<_> = points
+        let mut unique_y = points
             .iter()
             .flat_map(|point| [point.y - 1, point.y, point.y + 1])
-            .collect();
+            .collect::<Vec<_>>();
         unique_y.sort_unstable();
         unique_y.dedup();
 
@@ -126,34 +125,29 @@ impl Extension for Grid<Cell> {
 }
 
 fn part1(input: &str) -> isize {
-    let tiles: Vec<_> = input.lines().map(Point2D::parse).collect();
+    let tiles = input.lines().map(Point2D::parse).collect::<Vec<_>>();
     combinations2(tiles.len())
         .map(|(i, j)| Point2D::rectangle_area(tiles[i], tiles[j]))
         .max()
-        .expect("no tiles")
+        .unwrap()
 }
 
 fn part2(input: &str) -> isize {
-    let tiles: Vec<_> = input.lines().map(Point2D::parse).collect();
+    let tiles = input.lines().map(Point2D::parse).collect::<Vec<_>>();
 
     let compressor = Compressor::new(&tiles);
-    let compressed_tiles: Vec<_> = tiles
+    let compressed_tiles = tiles
         .iter()
         .map(|&tile| compressor.compress(tile))
-        .collect();
+        .collect::<Vec<_>>();
 
-    let mut grid = compressor.grid();
-    grid.perimeter(&compressed_tiles);
-    grid.flood_fill(Point2D::new(0, 0));
-    let table = grid.summed_area();
+    let mut compressed_grid = compressor.grid();
+    compressed_grid.perimeter(&compressed_tiles);
+    compressed_grid.flood_fill(Point2D::new(0, 0));
+    let table = compressed_grid.summed_area();
 
-    let mut areas: Vec<_> = combinations2(tiles.len())
-        .map(|(i, j)| (i, j, Point2D::rectangle_area(tiles[i], tiles[j])))
-        .collect();
-    areas.sort_unstable_by_key(|&(_, _, area)| Reverse(area));
-    areas
-        .into_iter()
-        .find(|&(i, j, _)| {
+    combinations2(tiles.len())
+        .filter(|&(i, j)| {
             let [start_x, end_x, start_y, end_y] =
                 Point2D::bounds(compressed_tiles[i], compressed_tiles[j]);
             let full = table[Point2D::new(end_x + 1, end_y + 1)];
@@ -162,8 +156,9 @@ fn part2(input: &str) -> isize {
             let top_left = table[Point2D::new(start_x + 1, start_y + 1)];
             full + top_left - top - left == 0
         })
-        .map(|(_, _, area)| area)
-        .expect("no tiles")
+        .map(|(i, j)| Point2D::rectangle_area(tiles[i], tiles[j]))
+        .max()
+        .unwrap()
 }
 
 #[cfg(test)]

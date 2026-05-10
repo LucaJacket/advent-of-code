@@ -23,8 +23,8 @@ fn main() {
 
 fn parse_range(range: &str) -> RangeInclusive<u64> {
     let (start, end) = range.split_once('-').unwrap();
-    let start = start.parse().unwrap();
-    let end = end.parse().unwrap();
+    let start = start.parse::<u64>().unwrap();
+    let end = end.parse::<u64>().unwrap();
     start..=end
 }
 
@@ -46,10 +46,10 @@ fn merge_ranges(ranges: impl Iterator<Item = RangeInclusive<u64>>) -> Vec<RangeI
 
 fn part1(input: &str) -> usize {
     let (ranges, ingredients) = input.split_once("\n\n").unwrap();
-    let ranges: Vec<_> = ranges.lines().map(parse_range).collect();
+    let ranges = ranges.lines().map(parse_range).collect::<Vec<_>>();
     ingredients
         .lines()
-        .map(|line| line.parse().unwrap())
+        .map(|line| line.parse::<u64>().unwrap())
         .filter(|&ingredient| ranges.iter().any(|range| range.contains(&ingredient)))
         .count()
 }

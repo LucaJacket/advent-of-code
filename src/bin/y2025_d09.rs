@@ -1,5 +1,5 @@
 //
-// Helpers: point, grid
+// Helpers: point, grid, compressor
 //
 // Approach:
 // - parse every tile to Point2D
@@ -15,6 +15,7 @@
 //
 
 use advent_of_code::common::{combinations2, read_input};
+use advent_of_code::compressor::Compressor;
 use advent_of_code::grid::Grid;
 use advent_of_code::point::Point2D;
 use std::cmp::PartialEq;
@@ -34,54 +35,14 @@ enum Cell {
     Outside,
 }
 
-struct Compressor {
-    unique_x: Vec<isize>,
-    unique_y: Vec<isize>,
-}
-
-impl Compressor {
-    fn new(points: &[Point2D]) -> Self {
-        let mut unique_x = points
-            .iter()
-            .flat_map(|point| [point.x - 1, point.x, point.x + 1])
-            .collect::<Vec<_>>();
-        unique_x.sort_unstable();
-        unique_x.dedup();
-
-        let mut unique_y = points
-            .iter()
-            .flat_map(|point| [point.y - 1, point.y, point.y + 1])
-            .collect::<Vec<_>>();
-        unique_y.sort_unstable();
-        unique_y.dedup();
-
-        Self { unique_x, unique_y }
-    }
-
-    fn compress(&self, point: Point2D) -> Point2D {
-        Point2D::new(
-            self.unique_x.binary_search(&point.x).unwrap() as isize,
-            self.unique_y.binary_search(&point.y).unwrap() as isize,
-        )
-    }
-
-    fn grid(&self) -> Grid<Cell> {
-        Grid::new(
-            self.unique_x.len() as isize,
-            self.unique_y.len() as isize,
-            Cell::Inside,
-        )
-    }
-}
-
 trait Extension {
-    fn perimeter(&mut self, vertices: &[Point2D]);
+    fn draw_perimeter(&mut self, vertices: &[Point2D]);
     fn flood_fill(&mut self, start: Point2D);
-    fn summed_area(&self) -> Grid<u64>;
+    fn summed_area_table(&self) -> Grid<u64>;
 }
 
 impl Extension for Grid<Cell> {
-    fn perimeter(&mut self, vertices: &[Point2D]) {
+    fn draw_perimeter(&mut self, vertices: &[Point2D]) {
         for i in 0..vertices.len() {
             let a = vertices[i];
             let b = vertices[(i + 1).rem_euclid(vertices.len())];
@@ -109,23 +70,24 @@ impl Extension for Grid<Cell> {
         }
     }
 
-    fn summed_area(&self) -> Grid<u64> {
+    fn summed_area_table(&self) -> Grid<u64> {
         let mut table = Grid::new(self.width + 1, self.height + 1, 0);
-        for y in 0..self.height {
-            for x in 0..self.width {
-                let cell = (self[Point2D::new(x, y)] == Cell::Outside) as u64;
-                let top = table[Point2D::new(x + 1, y)];
-                let left = table[Point2D::new(x, y + 1)];
-                let top_left = table[Point2D::new(x, y)];
-                table[Point2D::new(x + 1, y + 1)] = cell + top + left - top_left;
-            }
+
+        for point in self.coords() {
+            let value = (self[point] == Cell::Outside) as u64;
+            let above = table[Point2D::new(point.x + 1, point.y)];
+            let left = table[Point2D::new(point.x, point.y + 1)];
+            let above_left = table[point];
+            table[Point2D::new(point.x + 1, point.y + 1)] = value + above + left - above_left;
         }
+
         table
     }
 }
 
 fn part1(input: &str) -> isize {
     let tiles = input.lines().map(Point2D::parse).collect::<Vec<_>>();
+
     combinations2(tiles.len())
         .map(|(i, j)| Point2D::rectangle_area(tiles[i], tiles[j]))
         .max()
@@ -141,20 +103,20 @@ fn part2(input: &str) -> isize {
         .map(|&tile| compressor.compress(tile))
         .collect::<Vec<_>>();
 
-    let mut compressed_grid = compressor.grid();
-    compressed_grid.perimeter(&compressed_tiles);
+    let mut compressed_grid = compressor.grid(Cell::Inside);
+    compressed_grid.draw_perimeter(&compressed_tiles);
     compressed_grid.flood_fill(Point2D::new(0, 0));
-    let table = compressed_grid.summed_area();
+    let table = compressed_grid.summed_area_table();
 
     combinations2(tiles.len())
         .filter(|&(i, j)| {
             let [start_x, end_x, start_y, end_y] =
                 Point2D::bounds(compressed_tiles[i], compressed_tiles[j]);
             let full = table[Point2D::new(end_x + 1, end_y + 1)];
-            let top = table[Point2D::new(end_x + 1, start_y + 1)];
+            let above = table[Point2D::new(end_x + 1, start_y + 1)];
             let left = table[Point2D::new(start_x + 1, end_y + 1)];
-            let top_left = table[Point2D::new(start_x + 1, start_y + 1)];
-            full + top_left - top - left == 0
+            let above_left = table[Point2D::new(start_x + 1, start_y + 1)];
+            full + above_left - above - left == 0
         })
         .map(|(i, j)| Point2D::rectangle_area(tiles[i], tiles[j]))
         .max()

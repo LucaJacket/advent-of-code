@@ -1,13 +1,14 @@
 //
 // Approach:
-// - one-hot encode the 1st level (S = true)
+// - one-hot encode the 1st level (S = 1)
 // - for each level, compute next state and occurred splittings:
 //   if current[i] contains no beams, skip
 //   if found a splitter, increment counter and split
 //   else go through
+// - return total splittings
 //
 // Part 2:
-// - change the encoding from bool to usize to address multiplicity counting
+// - return sum final beams
 //
 
 use advent_of_code::common::read_input;

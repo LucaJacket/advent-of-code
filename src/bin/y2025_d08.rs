@@ -6,7 +6,7 @@
 // - build connections
 // - use UnionFind to track circuits:
 //   each junction is a node in a graph and each connection is a weighted edge (by distance)
-// - consider only num_connections edges
+// - consider only connection_count edges
 // - compute circuit sizes via nodes, since linked nodes all share the same root
 //
 // Part 2:
@@ -34,12 +34,12 @@ fn build_connections(junctions: &[Point3D]) -> Vec<(usize, usize)> {
     connections
 }
 
-fn part1(input: &str, num_connections: usize) -> usize {
+fn part1(input: &str, connection_count: usize) -> usize {
     let junctions = input.lines().map(Point3D::parse).collect::<Vec<_>>();
     let connections = build_connections(&junctions);
 
     let mut union_find = UnionFind::new(junctions.len());
-    for (i, j) in connections.into_iter().take(num_connections) {
+    for (i, j) in connections.into_iter().take(connection_count) {
         union_find.union(i, j);
     }
     let mut sizes = vec![0; junctions.len()];

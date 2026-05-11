@@ -14,7 +14,7 @@
 // - compute summed area table to quickly check if rectangle is valid
 //
 
-use advent_of_code::common::{combinations2, read_input};
+use advent_of_code::common::{cartesian_pairs, read_input, unordered_pairs};
 use advent_of_code::compressor::Compressor;
 use advent_of_code::grid::Grid;
 use advent_of_code::point::Point2D;
@@ -73,7 +73,8 @@ impl Extension for Grid<Cell> {
     fn summed_area_table(&self) -> Grid<u64> {
         let mut table = Grid::new(self.width + 1, self.height + 1, 0);
 
-        for point in self.coords() {
+        for (x, y) in cartesian_pairs(self.width, self.height) {
+            let point = Point2D::new(x as isize, y as isize);
             let value = (self[point] == Cell::Outside) as u64;
             let above = table[Point2D::new(point.x + 1, point.y)];
             let left = table[Point2D::new(point.x, point.y + 1)];
@@ -88,7 +89,7 @@ impl Extension for Grid<Cell> {
 fn part1(input: &str) -> isize {
     let tiles = input.lines().map(Point2D::parse).collect::<Vec<_>>();
 
-    combinations2(tiles.len())
+    unordered_pairs(tiles.len())
         .map(|(i, j)| Point2D::rectangle_area(tiles[i], tiles[j]))
         .max()
         .unwrap()
@@ -108,7 +109,7 @@ fn part2(input: &str) -> isize {
     compressed_grid.flood_fill(Point2D::new(0, 0));
     let table = compressed_grid.summed_area_table();
 
-    combinations2(tiles.len())
+    unordered_pairs(tiles.len())
         .filter(|&(i, j)| {
             let [start_x, end_x, start_y, end_y] =
                 Point2D::bounds(compressed_tiles[i], compressed_tiles[j]);

@@ -14,7 +14,7 @@
 // - if union was useful, update result
 //
 
-use advent_of_code::common::{combinations2, read_input};
+use advent_of_code::common::{read_input, unordered_pairs};
 use advent_of_code::point::Point3D;
 use advent_of_code::union_find::UnionFind;
 use std::cmp::Reverse;
@@ -27,7 +27,7 @@ fn main() {
 }
 
 fn build_connections(junctions: &[Point3D]) -> Vec<(usize, usize)> {
-    let mut connections = combinations2(junctions.len()).collect::<Vec<_>>();
+    let mut connections = unordered_pairs(junctions.len()).collect::<Vec<_>>();
     connections
         .sort_unstable_by_key(|&(i, j)| Point3D::distance_squared(junctions[i], junctions[j]));
 

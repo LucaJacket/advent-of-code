@@ -40,16 +40,18 @@ impl Extension for Grid<u8> {
         F: Fn(isize, isize) -> I,
         I: Iterator<Item = u64>,
     {
-        (0..self.width)
+        let w = self.width as isize;
+        let h = self.height as isize;
+        (0..w)
             .rev()
-            .filter(|&x| matches!(self[Point2D::new(x, self.height - 1)], SUM | MULTIPLY))
-            .scan(self.width, |right_bound, left_bound| {
+            .filter(|&x| matches!(self[Point2D::new(x, h - 1)], SUM | MULTIPLY))
+            .scan(self.width as isize, |right_bound, left_bound| {
                 let horizontal_bounds = (left_bound, *right_bound);
                 *right_bound = left_bound - 1;
                 Some(horizontal_bounds)
             })
             .map(|(left_bound, right_bound)| {
-                let operator = self[Point2D::new(left_bound, self.height - 1)];
+                let operator = self[Point2D::new(left_bound, h - 1)];
                 let operands = extract_operands(left_bound, right_bound);
                 match operator {
                     SUM => operands.sum::<u64>(),
@@ -61,8 +63,9 @@ impl Extension for Grid<u8> {
     }
 
     fn solve_by_rows(&self) -> u64 {
+        let h = self.height as isize;
         let operands_by_row = |left_bound, right_bound| {
-            (0..self.height - 1).map(move |y| {
+            (0..h - 1).map(move |y| {
                 let digits = (left_bound..right_bound)
                     .map(move |x| self[Point2D::new(x, y)])
                     .filter(|&digit| digit.is_ascii_digit());
@@ -73,9 +76,10 @@ impl Extension for Grid<u8> {
     }
 
     fn solve_by_columns(&self) -> u64 {
+        let h = self.height as isize;
         let operands_by_column = |left_bound, right_bound| {
             (left_bound..right_bound).map(move |x| {
-                let digits = (0..self.height - 1)
+                let digits = (0..h - 1)
                     .map(move |y| self[Point2D::new(x, y)])
                     .filter(|&digit| digit.is_ascii_digit());
                 parse_from_digits(digits)

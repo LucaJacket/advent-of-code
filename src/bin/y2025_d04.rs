@@ -10,7 +10,7 @@
 // - repeat until there are no rolls to remove
 //
 
-use advent_of_code::common::read_input;
+use advent_of_code::common::{cartesian_pairs, read_input};
 use advent_of_code::grid::Grid;
 use advent_of_code::point::Point2D;
 use std::iter::repeat_with;
@@ -40,7 +40,8 @@ impl Extension for Grid<u8> {
                 .count()
                 < THRESHOLD
         };
-        self.coords()
+        cartesian_pairs(self.width, self.height)
+            .map(|(x, y)| Point2D::new(x as isize, y as isize))
             .filter(move |&point| self[point] == ROLL && few_neighbors(point))
     }
 

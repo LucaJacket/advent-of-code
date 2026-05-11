@@ -7,6 +7,10 @@ pub fn parse_from_digits(digits: impl Iterator<Item = u8>) -> u64 {
     digits.fold(0, |acc, x| acc * 10 + (x - b'0') as u64)
 }
 
-pub fn combinations2(n: usize) -> impl Iterator<Item = (usize, usize)> {
+pub fn cartesian_pairs(n: usize, m: usize) -> impl Iterator<Item = (usize, usize)> {
+    (0..n).flat_map(move |i| (0..m).map(move |j| (i, j)))
+}
+
+pub fn unordered_pairs(n: usize) -> impl Iterator<Item = (usize, usize)> {
     (0..n).flat_map(move |i| (i + 1..n).map(move |j| (i, j)))
 }

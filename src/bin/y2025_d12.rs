@@ -1,16 +1,21 @@
 //
+// Helpers: dancing_links_x
+//
 // Approach:
 // - check if region is large enough to fit all presents without interlocking
 // - check if region is too small to fit all presents even with perfect interlocking
 // - if neither of the previous works, try to fit the presents manually:
-//   DFS search + backtracking
+//   variant of Knuth's Algorithm X + Dancing Links
+//   2 types of columns: required (shapes copies) and optional (grid cells)
 //
 
 use advent_of_code::common::{cartesian_pairs, read_input};
+use advent_of_code::dancing_links_x::DancingLinksX;
 use advent_of_code::grid::Grid;
 use advent_of_code::point::Point2D;
 use std::clone::Clone;
 use std::collections::HashSet;
+use std::iter::{once, repeat_n};
 
 fn main() {
     let input = read_input(2025, 12);
@@ -20,7 +25,6 @@ fn main() {
 
 const SIZE: usize = 3;
 const FULL: u8 = b'#';
-const EMPTY: u8 = b'.';
 
 #[derive(Clone, PartialEq, Eq, Hash)]
 struct Shape {
@@ -35,13 +39,6 @@ impl Shape {
         let points = Grid::parse(points);
 
         Self { index, points }
-    }
-
-    fn required_space(&self) -> usize {
-        cartesian_pairs(self.points.width, self.points.height)
-            .map(|(x, y)| Point2D::new(x as isize, y as isize))
-            .filter(|&point| self.points[point] == FULL)
-            .count()
     }
 
     fn flip_horizontally(&self) -> Self {
@@ -73,94 +70,77 @@ impl Shape {
         }
         out
     }
+
+    fn full(&self) -> impl Iterator<Item = Point2D> {
+        cartesian_pairs(self.points.width, self.points.height)
+            .map(|(x, y)| Point2D::new(x as isize, y as isize))
+            .filter(|&point| self.points[point] == FULL)
+    }
 }
 
 struct Region {
+    width: usize,
+    height: usize,
     presents: Vec<usize>,
-    points: Grid<u8>,
 }
 
 impl Region {
     fn parse(value: &str) -> Self {
         let (size, presents) = value.split_once(':').unwrap();
         let (width, height) = size.split_once('x').unwrap();
+
         let width = width.parse::<usize>().unwrap();
         let height = height.parse::<usize>().unwrap();
-        let points = Grid::new(width, height, EMPTY);
         let presents = presents
             .split_whitespace()
             .map(|num| num.parse::<usize>().unwrap())
             .collect::<Vec<_>>();
 
-        Self { presents, points }
+        Self {
+            width,
+            height,
+            presents,
+        }
     }
 
-    fn fit(&mut self, original: &[Shape], transformed: &[Shape]) -> bool {
-        let total_presents = self.presents.iter().sum();
-        if (self.points.width / SIZE) * (self.points.height / SIZE) >= total_presents {
+    fn fit(&self, shapes: &[Vec<Shape>]) -> bool {
+        let total_presents = self.presents.iter().sum::<usize>();
+        if (self.width / SIZE) * (self.height / SIZE) >= total_presents {
             return true;
         }
-        let min_required_space = original
+
+        let min_required_space = self
+            .presents
             .iter()
-            .zip(self.presents.iter())
-            .map(|(shape, &count)| shape.required_space() * count)
-            .sum();
-        if self.points.width * self.points.height < min_required_space {
+            .zip(shapes)
+            .map(|(&count, transformed)| count * transformed[0].full().count())
+            .sum::<usize>();
+        if self.width * self.height < min_required_space {
             return false;
         }
-        self.dfs(transformed)
-    }
 
-    fn dfs(&mut self, shapes: &[Shape]) -> bool {
-        if self.presents.iter().sum::<usize>() == 0 {
-            return true;
-        }
-
-        let w = self.points.width - SIZE + 1;
-        let h = self.points.height - SIZE + 1;
-        for (x, y) in cartesian_pairs(w, h) {
-            let position = Point2D::new(x as isize, y as isize);
-            for shape in shapes.iter() {
-                if self.presents[shape.index] == 0 {
-                    continue;
-                }
-                if self.can_place(shape, position) {
-                    self.place(shape, position);
-                    if self.dfs(shapes) {
-                        return true;
+        let mut dlx = DancingLinksX::new(total_presents + self.width * self.height, total_presents);
+        self.presents
+            .iter()
+            .enumerate()
+            .flat_map(|(index, &count)| repeat_n(index, count))
+            .enumerate()
+            .for_each(|(copy, index)| {
+                for shape in &shapes[index] {
+                    for (x, y) in cartesian_pairs(self.width - SIZE + 1, self.height - SIZE + 1) {
+                        let row = once(copy)
+                            .chain(shape.full().map(move |point| {
+                                total_presents
+                                    + (y + point.y as usize) * self.width
+                                    + (x + point.x as usize)
+                            }))
+                            .collect::<Vec<_>>();
+                        dlx.add_row(&row);
                     }
-                    self.unplace(shape, position);
                 }
-            }
-        }
+            });
 
-        false
-    }
-
-    fn can_place(&self, shape: &Shape, position: Point2D) -> bool {
-        cartesian_pairs(shape.points.width, shape.points.height)
-            .map(|(x, y)| Point2D::new(x as isize, y as isize))
-            .all(|point| self.points[point + position] == EMPTY || shape.points[point] == EMPTY)
-    }
-
-    fn place(&mut self, shape: &Shape, position: Point2D) {
-        for (x, y) in cartesian_pairs(shape.points.width, shape.points.height) {
-            let point = Point2D::new(x as isize, y as isize);
-            if shape.points[point] == FULL {
-                self.points[point + position] = FULL;
-            }
-        }
-        self.presents[shape.index] -= 1;
-    }
-
-    fn unplace(&mut self, shape: &Shape, position: Point2D) {
-        for (x, y) in cartesian_pairs(shape.points.width, shape.points.height) {
-            let point = Point2D::new(x as isize, y as isize);
-            if shape.points[point] == FULL {
-                self.points[point + position] = EMPTY;
-            }
-        }
-        self.presents[shape.index] += 1;
+        dlx.solve().is_some()
     }
 }
 
@@ -184,20 +164,18 @@ fn part1(input: &str) -> usize {
     let original = shapes.split("\n\n").map(Shape::parse).collect::<Vec<_>>();
     let transformed = original
         .iter()
-        .flat_map(|shape| {
+        .map(|shape| {
             cartesian_pairs(ROTATIONS.len(), FLIPS.len())
-                .map(move |(r, f)| ROTATIONS[r](&FLIPS[f](&shape)))
+                .map(move |(r, f)| ROTATIONS[r](&FLIPS[f](shape)))
+                .collect::<HashSet<_>>()
+                .into_iter()
+                .collect::<Vec<_>>()
         })
-        .collect::<HashSet<_>>()
-        .into_iter()
         .collect::<Vec<_>>();
 
     regions
         .lines()
-        .filter(|&region| {
-            let mut region = Region::parse(region);
-            region.fit(&original, &transformed)
-        })
+        .filter(|&region| Region::parse(region).fit(&transformed))
         .count()
 }
 

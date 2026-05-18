@@ -14,7 +14,7 @@ pub const DIRS8: [Point2D; 8] = [
     NORTH, NORTH_EAST, EAST, SOUTH_EAST, SOUTH, SOUTH_WEST, WEST, NORTH_WEST,
 ];
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub struct Point2D {
     pub x: isize,
     pub y: isize,
@@ -79,7 +79,7 @@ impl SubAssign for Point2D {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub struct Point3D {
     pub x: isize,
     pub y: isize,

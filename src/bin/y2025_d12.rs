@@ -7,6 +7,7 @@
 // - if neither of the previous works, try to fit the presents manually:
 //   variant of Knuth's Algorithm X + Dancing Links
 //   2 types of columns: required (shapes copies) and optional (grid cells)
+//   each row consist of a possible placement of a shape
 //
 
 use advent_of_code::common::{cartesian_pairs, read_input};
@@ -128,14 +129,12 @@ impl Region {
             .for_each(|(copy, index)| {
                 for shape in &shapes[index] {
                     for (x, y) in cartesian_pairs(self.width - SIZE + 1, self.height - SIZE + 1) {
-                        let row = once(copy)
-                            .chain(shape.full().map(move |point| {
-                                total_presents
-                                    + (y + point.y as usize) * self.width
-                                    + (x + point.x as usize)
-                            }))
-                            .collect::<Vec<_>>();
-                        dlx.add_row(&row);
+                        let row = once(copy).chain(shape.full().map(move |point| {
+                            total_presents
+                                + (y + point.y as usize) * self.width
+                                + (x + point.x as usize)
+                        }));
+                        dlx.add_row(row);
                     }
                 }
             });

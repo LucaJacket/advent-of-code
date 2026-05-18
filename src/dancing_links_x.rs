@@ -67,10 +67,10 @@ impl DancingLinksX {
         }
     }
 
-    pub fn add_row(&mut self, columns: &[usize]) {
+    pub fn add_row(&mut self, row: impl IntoIterator<Item = usize>) {
         let first = self.nodes.len();
 
-        for &c in columns {
+        for c in row.into_iter() {
             self.columns[c].size += 1;
 
             let idx = self.nodes.len();

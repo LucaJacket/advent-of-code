@@ -28,8 +28,8 @@ fn parse_range(range: &str) -> RangeInclusive<u64> {
     start..=end
 }
 
-fn merge_ranges(ranges: impl Iterator<Item = RangeInclusive<u64>>) -> Vec<RangeInclusive<u64>> {
-    let mut sorted = ranges.collect::<Vec<_>>();
+fn merge_ranges(ranges: impl IntoIterator<Item = RangeInclusive<u64>>) -> Vec<RangeInclusive<u64>> {
+    let mut sorted = ranges.into_iter().collect::<Vec<_>>();
     sorted.sort_unstable_by_key(|range| *range.start());
 
     sorted.into_iter().fold(Vec::new(), |mut merged, range| {

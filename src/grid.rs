@@ -1,7 +1,7 @@
-use crate::point::{DIRS4, DIRS8, Point2D};
+use crate::point::{Point2D, DIRS4, DIRS8};
 use std::ops::{Index, IndexMut};
 
-#[derive(Clone, PartialEq, Eq, Hash)]
+#[derive(Clone, PartialEq, Eq, Hash, Debug)]
 pub struct Grid<T> {
     pub data: Vec<T>,
     pub width: usize,
@@ -24,18 +24,22 @@ impl<T> Grid<T> {
         (0..self.width as isize).contains(&point.x) && (0..self.height as isize).contains(&point.y)
     }
 
-    fn neighbors(&self, point: Point2D, dirs: &[Point2D]) -> impl Iterator<Item = Point2D> {
-        dirs.iter()
-            .map(move |&dir| dir + point)
+    fn neighbors(
+        &self,
+        point: Point2D,
+        dirs: impl IntoIterator<Item = Point2D>,
+    ) -> impl Iterator<Item = Point2D> {
+        dirs.into_iter()
+            .map(move |dir| dir + point)
             .filter(|&neighbor| self.is_in_bounds(neighbor))
     }
 
     pub fn neighbors4(&self, point: Point2D) -> impl Iterator<Item = Point2D> {
-        self.neighbors(point, &DIRS4)
+        self.neighbors(point, DIRS4)
     }
 
     pub fn neighbors8(&self, point: Point2D) -> impl Iterator<Item = Point2D> {
-        self.neighbors(point, &DIRS8)
+        self.neighbors(point, DIRS8)
     }
 }
 

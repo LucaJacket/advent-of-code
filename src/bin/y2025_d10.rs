@@ -9,9 +9,10 @@
 //
 // Part 2:
 // - parse every requirement to Vec<usize>
-// - compute steps:
+// - DFS search:
 //   find all possible combinations of buttons which match the parities of the requirements
-//
+//   for each of those, compute remaining requirements, halve and recurse
+//   at least one of those combinations will lead to a possible solution
 //
 
 use advent_of_code::common::read_input;

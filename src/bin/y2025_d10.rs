@@ -1,8 +1,8 @@
 //
 // Approach:
 // - parse every diagram and button to Vec<bool>
-// - BFS search the solutions tree:
-//   at each level, press 1 button and check if target is reached
+// - BFS search:
+//   at each choice, press button and check if target is reached
 // - Pruning:
 //   pressing twice a button cancels its effect
 //   order of pressing is irrelevant
@@ -25,18 +25,12 @@ fn main() {
     println!("Part 2: {}", part2(&input));
 }
 
-type Diagram = Vec<bool>;
-type Button = Vec<bool>;
-type Requirements = Vec<usize>;
-type LightSolution = Vec<bool>;
-type JoltageSolution = Vec<usize>;
-
-fn parse_machine(machine: &str) -> (Diagram, Vec<Button>, Requirements) {
+fn parse_machine(machine: &str) -> (Vec<bool>, Vec<Vec<bool>>, Vec<usize>) {
     let mut parts = machine.split_whitespace();
-    let diagram: Diagram = parts
+    let diagram = parts
         .next()
-        .map(|diagram_str| {
-            diagram_str
+        .map(|diagram| {
+            diagram
                 .trim_start_matches('[')
                 .trim_end_matches(']')
                 .as_bytes()
@@ -46,69 +40,70 @@ fn parse_machine(machine: &str) -> (Diagram, Vec<Button>, Requirements) {
                     b'.' => false,
                     _ => unreachable!(),
                 })
-                .collect()
+                .collect::<Vec<_>>()
         })
-        .expect("no diagram");
-    let requirements: Requirements = parts
+        .unwrap();
+    let requirements = parts
         .next_back()
-        .map(|requirements_str| {
-            requirements_str
+        .map(|requirements| {
+            requirements
                 .trim_start_matches('{')
                 .trim_end_matches('}')
                 .split(',')
-                .map(|num| num.parse().expect("failed to parse requirements"))
-                .collect()
+                .map(|num| num.parse::<usize>().unwrap())
+                .collect::<Vec<_>>()
         })
-        .expect("no requirements");
-    let buttons: Vec<Button> = parts
-        .map(|button_str| {
-            button_str
+        .unwrap();
+    let buttons = parts
+        .map(|button| {
+            button
                 .trim_start_matches('(')
                 .trim_end_matches(')')
                 .split(',')
-                .map(|num| num.parse().expect("failed to parse button"))
-                .fold(
-                    vec![false; diagram.len()],
-                    |mut button: Button, i: usize| {
-                        button[i] = true;
-                        button
-                    },
-                )
+                .map(|num| num.parse::<usize>().unwrap())
+                .fold(vec![false; diagram.len()], |mut button, i| {
+                    button[i] = true;
+                    button
+                })
         })
-        .collect();
+        .collect::<Vec<_>>();
 
     (diagram, buttons, requirements)
 }
 
-fn configure_lights(diagram: Diagram, buttons: &[Button]) -> impl Iterator<Item = LightSolution> {
-    let mut seen: HashSet<LightSolution> = HashSet::new();
-    let mut queue: VecDeque<LightSolution> = VecDeque::new();
+fn configure_lights(diagram: &[bool], buttons: &[Vec<bool>]) -> impl Iterator<Item = Vec<bool>> {
+    let n = diagram.len();
+    let m = buttons.len();
 
-    let start: LightSolution = vec![false; buttons.len()];
-    queue.push_back(start);
+    let mut seen = HashSet::new();
+    let mut queue = VecDeque::new();
+
+    let start = vec![false; m];
+    let output = vec![false; n];
+    queue.push_back((start, output));
 
     from_fn(move || {
-        while let Some(current) = queue.pop_front() {
+        while let Some((current, output)) = queue.pop_front() {
             if !seen.insert(current.clone()) {
                 continue;
             }
 
-            (0..buttons.len()).filter(|&i| !current[i]).for_each(|i| {
-                let mut next: LightSolution = current.clone();
-                next[i] = true;
-                queue.push_back(next);
-            });
+            for i in 0..m {
+                if current[i] {
+                    continue;
+                }
 
-            let output: Diagram = (0..buttons.len()).filter(|&i| current[i]).fold(
-                vec![false; diagram.len()],
-                |output, i| {
-                    output
-                        .iter()
-                        .zip(buttons[i].iter())
-                        .map(|(&x, &y)| x ^ y)
-                        .collect()
-                },
-            );
+                let mut next = current.clone();
+                next[i] = true;
+                let next_output = output
+                    .iter()
+                    .zip(buttons[i].iter())
+                    .map(|(&x, &y)| x ^ y)
+                    .collect::<Vec<_>>();
+
+                queue.push_back((next, next_output));
+            }
+
             if output == diagram {
                 return Some(current);
             }
@@ -118,70 +113,77 @@ fn configure_lights(diagram: Diagram, buttons: &[Button]) -> impl Iterator<Item 
     })
 }
 
-fn configure_joltages(
-    requirements: Requirements,
-    buttons: &[Button],
-    memo: &mut HashMap<Requirements, Option<JoltageSolution>>,
-    light_memo: &mut HashMap<Diagram, Vec<LightSolution>>,
-) -> Option<JoltageSolution> {
-    if let Some(cached) = memo.get(&requirements) {
-        return cached.clone();
-    }
+fn configure_joltages(requirements: &[usize], buttons: &[Vec<bool>]) -> usize {
+    fn dfs(
+        remaining: Vec<usize>,
+        buttons: &[Vec<bool>],
+        solution_memo: &mut HashMap<Vec<usize>, Option<usize>>,
+        parity_memo: &mut HashMap<Vec<bool>, Vec<Vec<bool>>>,
+    ) -> Option<usize> {
+        let n = remaining.len();
+        let m = buttons.len();
 
-    if requirements.iter().all(|&requirement| requirement == 0) {
-        let end: JoltageSolution = vec![0; buttons.len()];
-        return Some(end);
-    }
+        if let Some(&solution) = solution_memo.get(&remaining) {
+            return solution;
+        }
 
-    let parities: Diagram = requirements
-        .iter()
-        .map(|&requirement| !requirement.is_multiple_of(2))
-        .collect();
-    let light_solutions = light_memo
-        .entry(parities.clone())
-        .or_insert_with(|| configure_lights(parities.clone(), buttons).collect())
-        .clone();
-    let mut best: Option<JoltageSolution> = None;
-    'outer: for light_solution in light_solutions.iter() {
-        let mut remaining: Requirements = requirements.clone();
-        for i in 0..light_solution.len() {
-            if light_solution[i] {
-                for j in 0..requirements.len() {
+        if remaining.iter().all(|&x| x == 0) {
+            return Some(0);
+        }
+
+        let parity = remaining
+            .iter()
+            .map(|&x| !x.is_multiple_of(2))
+            .collect::<Vec<_>>();
+
+        let parity_solutions = parity_memo
+            .entry(parity.clone())
+            .or_insert_with(|| configure_lights(&parity, buttons).collect::<Vec<_>>())
+            .clone();
+
+        let mut best = None;
+        'outer: for parity in &parity_solutions {
+            let mut next_remaining = remaining.to_vec();
+            for i in 0..m {
+                if !parity[i] {
+                    continue;
+                }
+
+                for j in 0..n {
                     if buttons[i][j] {
-                        if remaining[j] == 0 {
+                        if next_remaining[j] == 0 {
                             continue 'outer;
                         }
-                        remaining[j] -= 1;
+
+                        next_remaining[j] -= 1;
                     }
                 }
             }
-        }
-        for i in 0..remaining.len() {
-            remaining[i] /= 2;
-        }
 
-        // check if there is solution
-        if let Some(partial) = configure_joltages(remaining, buttons, memo, light_memo) {
-            let current: JoltageSolution = (0..buttons.len())
-                .map(|i| light_solution[i] as usize + 2 * partial[i])
-                .collect();
+            for x in &mut next_remaining {
+                *x /= 2;
+            }
 
-            let current_cost: usize = current.iter().sum();
-
-            match &best {
-                None => best = Some(current),
-                Some(best_sol) => {
-                    let best_cost: usize = best_sol.iter().sum();
-                    if current_cost < best_cost {
-                        best = Some(current);
-                    }
+            if let Some(partial) = dfs(next_remaining, buttons, solution_memo, parity_memo) {
+                let candidate = parity.iter().filter(|&&pressed| pressed).count() + 2 * partial;
+                if best.is_none() || candidate < best.unwrap() {
+                    best = Some(candidate);
                 }
             }
         }
+
+        solution_memo.insert(remaining.to_vec(), best);
+
+        best
     }
 
-    memo.insert(requirements.clone(), best.clone());
-    best
+    dfs(
+        requirements.to_vec(),
+        buttons,
+        &mut HashMap::new(),
+        &mut HashMap::new(),
+    )
+    .unwrap()
 }
 
 fn part1(input: &str) -> usize {
@@ -189,10 +191,10 @@ fn part1(input: &str) -> usize {
         .lines()
         .map(parse_machine)
         .map(|(diagram, buttons, _)| {
-            configure_lights(diagram, &buttons)
+            configure_lights(&diagram, &buttons)
                 .next()
                 .map(|solution| solution.into_iter().filter(|&pressed| pressed).count())
-                .expect("no solution")
+                .unwrap()
         })
         .sum()
 }
@@ -201,17 +203,7 @@ fn part2(input: &str) -> usize {
     input
         .lines()
         .map(parse_machine)
-        .map(|(_, buttons, requirements)| {
-            configure_joltages(
-                requirements,
-                &buttons,
-                &mut HashMap::new(),
-                &mut HashMap::new(),
-            )
-            .map(|solution| solution.into_iter().sum::<usize>())
-            .expect("no solution")
-        })
-        .inspect(|joltage| println!("{}", joltage))
+        .map(|(_, buttons, requirements)| configure_joltages(&requirements, &buttons))
         .sum()
 }
 

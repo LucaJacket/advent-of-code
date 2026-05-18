@@ -99,7 +99,7 @@ impl DancingLinksX {
         self.rows += 1;
     }
 
-    pub fn cover(&mut self, col: usize) {
+    fn cover(&mut self, col: usize) {
         let left = self.nodes[col].left;
         let right = self.nodes[col].right;
 
@@ -127,7 +127,7 @@ impl DancingLinksX {
         }
     }
 
-    pub fn uncover(&mut self, col: usize) {
+    fn uncover(&mut self, col: usize) {
         let mut row = self.nodes[col].up;
 
         while row != col {
@@ -155,11 +155,7 @@ impl DancingLinksX {
         self.nodes[right].left = col;
     }
 
-    pub fn search(
-        &mut self,
-        solution: &mut Vec<usize>,
-        satisfied: &mut usize,
-    ) -> Option<Vec<usize>> {
+    fn search(&mut self, solution: &mut Vec<usize>, satisfied: &mut usize) -> Option<Vec<usize>> {
         if *satisfied >= self.required {
             return Some(solution.clone());
         }
@@ -213,7 +209,7 @@ impl DancingLinksX {
         None
     }
 
-    pub fn choose_column(&self) -> usize {
+    fn choose_column(&self) -> usize {
         let mut best = self.nodes[self.header].right;
         let mut min_size = usize::MAX;
 

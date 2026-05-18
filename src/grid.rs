@@ -1,4 +1,4 @@
-use crate::point::{Point2D, DIRS4, DIRS8};
+use crate::point::{DIRS4, DIRS8, Point2D};
 use std::ops::{Index, IndexMut};
 
 #[derive(Clone, PartialEq, Eq, Hash, Debug)]

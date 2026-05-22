@@ -1,11 +1,11 @@
-//
-// Approach:
-// - parse every range and flatten
-// - for each id: check if id is first block repeated twice
-//
-// Part 2:
-// - check all possible values of block_count
-//
+//!
+//! Approach:
+//! - parse every range and flatten
+//! - for each id: check if id is first block repeated twice
+//!
+//! Part 2:
+//! - check all possible values of block_count
+//!
 
 use advent_of_code::common::read_input;
 use std::ops::RangeInclusive;

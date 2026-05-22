@@ -1,18 +1,18 @@
-//
-// Helpers: point, union_find
-//
-// Approach:
-// - parse every junction to Point3D
-// - build connections
-// - use UnionFind to track circuits:
-//   each junction is a node in a graph and each connection is a weighted edge (by distance)
-// - consider only connection_count edges
-// - compute circuit sizes via nodes, since linked nodes all share the same root
-//
-// Part 2:
-// - consider all edges
-// - if union was useful, update result
-//
+//!
+//! Helpers: point, union_find
+//!
+//! Approach:
+//! - parse every junction to Point3D
+//! - build connections
+//! - use UnionFind to track circuits:
+//!   each junction is a node in a graph and each connection is a weighted edge (by distance)
+//! - consider only connection_count edges
+//! - compute circuit sizes via nodes, since linked nodes all share the same root
+//!
+//! Part 2:
+//! - consider all edges
+//! - if union was useful, update result
+//!
 
 use advent_of_code::common::{read_input, unordered_pairs};
 use advent_of_code::point::Point3D;
@@ -29,7 +29,7 @@ fn main() {
 fn build_connections(junctions: &[Point3D]) -> Vec<(usize, usize)> {
     let mut connections = unordered_pairs(junctions.len()).collect::<Vec<_>>();
     connections
-        .sort_unstable_by_key(|&(i, j)| Point3D::distance_squared(junctions[i], junctions[j]));
+        .sort_unstable_by_key(|&(i, j)| Point3D::straight_distance_squared(junctions[i], junctions[j]));
 
     connections
 }

@@ -1,13 +1,13 @@
-//
-// Approach:
-// - parse every bank to byte slice &[u8]
-// - extract 1st battery (max. power) among all but the last
-// - extract 2nd battery among all following the 1st
-//
-// Part 2:
-// - just repeat 12 times, each time excluding (suppose the i-th battery is picked at index idx):
-//   the first idx + 1 batteries and the last 12 - i
-//
+//!
+//! Approach:
+//! - parse every bank to byte slice &[u8]
+//! - extract 1st battery (max. power) among all but the last
+//! - extract 2nd battery among all following the 1st
+//!
+//! Part 2:
+//! - just repeat 12 times, each time excluding (suppose the i-th battery is picked at index idx):
+//!   the first idx + 1 batteries and the last 12 - i
+//!
 
 use advent_of_code::common::{parse_from_digits, read_input};
 use std::cmp::Reverse;
@@ -19,7 +19,7 @@ fn main() {
     println!("Part 2: {}", part2(&input));
 }
 
-fn extract_total_power(bank: &[u8], n: usize) -> u64 {
+fn extract_total_power(bank: &[char], n: usize) -> u64 {
     let digits = (1..=n).scan(0, |start, i| {
         let end = bank.len() - (n - i);
         let (&power, idx) = bank[*start..end]
@@ -36,16 +36,16 @@ fn extract_total_power(bank: &[u8], n: usize) -> u64 {
 fn part1(input: &str) -> u64 {
     input
         .lines()
-        .map(str::as_bytes)
-        .map(|bank| extract_total_power(bank, 2))
+        .map(|bank| bank.chars().collect::<Vec<_>>())
+        .map(|bank| extract_total_power(&bank, 2))
         .sum()
 }
 
 fn part2(input: &str) -> u64 {
     input
         .lines()
-        .map(str::as_bytes)
-        .map(|bank| extract_total_power(bank, 12))
+        .map(|bank| bank.chars().collect::<Vec<_>>())
+        .map(|bank| extract_total_power(&bank, 12))
         .sum()
 }
 

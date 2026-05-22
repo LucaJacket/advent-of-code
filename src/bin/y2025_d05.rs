@@ -1,15 +1,15 @@
-//
-// Approach:
-// - split into ingredients and ranges, then parse every range
-// - for each ingredient, check if any range contains the ingredient
-//
-// Part 2:
-// - sort the ranges by start
-// - create a new Vec
-// - for each range:
-//   if it overlaps with the last range, extend the last range
-//   else add the range
-//
+//!
+//! Approach:
+//! - split into ingredients and ranges, then parse every range
+//! - for each ingredient, check if any range contains the ingredient
+//!
+//! Part 2:
+//! - sort the ranges by start
+//! - create a new Vec
+//! - for each range:
+//!   if it overlaps with the last range, extend the last range
+//!   else add the range
+//!
 
 use advent_of_code::common::read_input;
 use std::ops::RangeInclusive;

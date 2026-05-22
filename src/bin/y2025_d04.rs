@@ -1,14 +1,14 @@
-//
-// Helpers: grid, point
-//
-// Approach:
-// - parse grid
-// - for every position, check if there are less than 4 neighbors
-//
-// Part 2:
-// - collect all the accessible rolls, then remove them
-// - repeat until there are no rolls to remove
-//
+//!
+//! Helpers: grid, point
+//!
+//! Approach:
+//! - parse grid
+//! - for every position, check if there are less than 4 neighbors
+//!
+//! Part 2:
+//! - collect all the accessible rolls, then remove them
+//! - repeat until there are no rolls to remove
+//!
 
 use advent_of_code::common::{cartesian_pairs, read_input};
 use advent_of_code::grid::Grid;
@@ -22,8 +22,8 @@ fn main() {
     println!("Part 2: {}", part2(&input));
 }
 
-const ROLL: u8 = b'@';
-const EMPTY: u8 = b'.';
+const ROLL: char = '@';
+const EMPTY: char = '.';
 const THRESHOLD: usize = 4;
 
 trait Extension {
@@ -31,7 +31,7 @@ trait Extension {
     fn remove(&mut self) -> usize;
 }
 
-impl Extension for Grid<u8> {
+impl Extension for Grid<char> {
     fn accessible(&self) -> impl Iterator<Item = Point2D> {
         let few_neighbors = |point: Point2D| {
             self.neighbors8(point)

@@ -1,15 +1,15 @@
-//
-// Helpers: grid, point
-//
-// Approach:
-// - parse table
-// - split into sub-tables: horizontal bounds are given by operators on last row
-// - for each subtable: extract operator, extract operands (by row), compute result
-// - finally, sum
-//
-// Part 2:
-// - change extract operands (by col)
-//
+//!
+//! Helpers: grid, point
+//!
+//! Approach:
+//! - parse table
+//! - split into sub-tables: horizontal bounds are given by operators on last row
+//! - for each subtable: extract operator, extract operands (by row), compute result
+//! - finally, sum
+//!
+//! Part 2:
+//! - change extract operands (by col)
+//!
 
 use advent_of_code::common::{parse_from_digits, read_input};
 use advent_of_code::grid::Grid;
@@ -22,9 +22,6 @@ fn main() {
     println!("Part 2: {}", part2(&input));
 }
 
-const SUM: u8 = b'+';
-const MULTIPLY: u8 = b'*';
-
 trait Extension {
     fn solve<F, I>(&self, extract_operands: F) -> u64
     where
@@ -34,17 +31,16 @@ trait Extension {
     fn solve_by_columns(&self) -> u64;
 }
 
-impl Extension for Grid<u8> {
+impl Extension for Grid<char> {
     fn solve<F, I>(&self, extract_operands: F) -> u64
     where
         F: Fn(isize, isize) -> I,
         I: Iterator<Item = u64>,
     {
-        let w = self.width as isize;
-        let h = self.height as isize;
+        let (w, h) = (self.width as isize, self.height as isize);
         (0..w)
             .rev()
-            .filter(|&x| matches!(self[Point2D::new(x, h - 1)], SUM | MULTIPLY))
+            .filter(|&x| !self[Point2D::new(x, h - 1)].is_whitespace())
             .scan(self.width as isize, |right_bound, left_bound| {
                 let horizontal_bounds = (left_bound, *right_bound);
                 *right_bound = left_bound - 1;
@@ -54,8 +50,8 @@ impl Extension for Grid<u8> {
                 let operator = self[Point2D::new(left_bound, h - 1)];
                 let operands = extract_operands(left_bound, right_bound);
                 match operator {
-                    SUM => operands.sum::<u64>(),
-                    MULTIPLY => operands.product::<u64>(),
+                    '+' => operands.sum::<u64>(),
+                    '*' => operands.product::<u64>(),
                     _ => unreachable!(),
                 }
             })
@@ -65,12 +61,13 @@ impl Extension for Grid<u8> {
     fn solve_by_rows(&self) -> u64 {
         let h = self.height as isize;
         let operands_by_row = |left_bound, right_bound| {
-            (0..h - 1).map(move |y| {
-                let digits = (left_bound..right_bound)
-                    .map(move |x| self[Point2D::new(x, y)])
-                    .filter(|&digit| digit.is_ascii_digit());
-                parse_from_digits(digits)
-            })
+            (0..h - 1)
+                .map(move |y| {
+                    (left_bound..right_bound)
+                        .map(move |x| self[Point2D::new(x, y)])
+                        .filter(|&digit| digit.is_ascii_digit())
+                })
+                .map(parse_from_digits)
         };
         self.solve(operands_by_row)
     }
@@ -78,12 +75,13 @@ impl Extension for Grid<u8> {
     fn solve_by_columns(&self) -> u64 {
         let h = self.height as isize;
         let operands_by_column = |left_bound, right_bound| {
-            (left_bound..right_bound).map(move |x| {
-                let digits = (0..h - 1)
-                    .map(move |y| self[Point2D::new(x, y)])
-                    .filter(|&digit| digit.is_ascii_digit());
-                parse_from_digits(digits)
-            })
+            (left_bound..right_bound)
+                .map(move |x| {
+                    (0..h - 1)
+                        .map(move |y| self[Point2D::new(x, y)])
+                        .filter(|&digit| digit.is_ascii_digit())
+                })
+                .map(parse_from_digits)
         };
         self.solve(operands_by_column)
     }

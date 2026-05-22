@@ -1,13 +1,13 @@
-//
-// Approach:
-// - parse every rotation (signed integer: left = negative, right = positive)
-// - apply rotation
-// - detect if dial is on 0 (modular arithmetic)
-// - count
-//
-// Part 2:
-// - repeat n times a +1 or -1 rotation
-//
+//!
+//! Approach:
+//! - parse every rotation (signed integer: left = negative, right = positive)
+//! - apply rotation
+//! - detect if dial is on 0 (modular arithmetic)
+//! - count
+//!
+//! Part 2:
+//! - repeat n times a +1 or -1 rotation
+//!
 
 use advent_of_code::common::read_input;
 use std::iter::repeat_n;

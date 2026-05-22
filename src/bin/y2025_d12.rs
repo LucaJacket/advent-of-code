@@ -1,14 +1,14 @@
-//
-// Helpers: dancing_links_x
-//
-// Approach:
-// - check if region is large enough to fit all presents without interlocking
-// - check if region is too small to fit all presents even with perfect interlocking
-// - if neither of the previous works, try to fit the presents manually:
-//   variant of Knuth's Algorithm X + Dancing Links
-//   2 types of columns: required (shapes copies) and optional (grid cells)
-//   each row consist of a possible placement of a shape
-//
+//!
+//! Helpers: dancing_links_x
+//!
+//! Approach:
+//! - check if region is large enough to fit all presents without interlocking
+//! - check if region is too small to fit all presents even with perfect interlocking
+//! - if neither of the previous works, try to fit the presents manually:
+//!   variant of Knuth's Algorithm X + Dancing Links
+//!   2 types of columns: required (shapes copies) and optional (grid cells)
+//!   each row consist of a possible placement of a shape
+//!
 
 use advent_of_code::common::{cartesian_pairs, read_input};
 use advent_of_code::dancing_links_x::DancingLinksX;
@@ -25,12 +25,12 @@ fn main() {
 }
 
 const SIZE: usize = 3;
-const FULL: u8 = b'#';
+const FULL: char = '#';
 
 #[derive(Clone, PartialEq, Eq, Hash)]
 struct Shape {
     index: usize,
-    points: Grid<u8>,
+    points: Grid<char>,
 }
 
 impl Shape {

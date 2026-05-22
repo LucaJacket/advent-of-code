@@ -1,16 +1,16 @@
-//
-// Approach:
-// - parse into direct acyclic graph (HashMap)
-// - build topological order of nodes:
-//   use in_degree to compute when to add node to the final order (number of nodes pointing = 0)
-// - compute paths using dynamic programming:
-//   start from (start, 1), visit neighbors and add the number of paths to reach them
-//
-// Part 2:
-// - since the graph is acyclic, only one of the paths is possible:
-//   svr -> fft -> dac -> out | svr -> dac -> fft -> out
-// - the total number of paths can be obtained multiplying the number of paths in each subpath
-//
+//!
+//! Approach:
+//! - parse into direct acyclic graph (HashMap)
+//! - build topological order of nodes:
+//!   use in_degree to compute when to add node to the final order (number of nodes pointing = 0)
+//! - compute paths using dynamic programming:
+//!   start from (start, 1), visit neighbors and add the number of paths to reach them
+//!
+//! Part 2:
+//! - since the graph is acyclic, only one of the paths is possible:
+//!   svr -> fft -> dac -> out | svr -> dac -> fft -> out
+//! - the total number of paths can be obtained multiplying the number of paths in each subpath
+//!
 
 use advent_of_code::common::read_input;
 use std::collections::{HashMap, VecDeque};

@@ -1,18 +1,18 @@
-//
-// Helpers: point, grid, compressor
-//
-// Approach:
-// - parse every tile to Point2D
-// - for each tiles combination, compute rectangle area
-// - finally, select the max
-//
-// Part 2:
-// - generate grid: since 100_000 * 100_000 is huge,
-//   compress the coordinates to avoid storing useless information
-// - draw perimeter (the vertices of the polygon are already ordered)
-// - flood fill (BFS) to detect outside
-// - compute summed area table to quickly check if rectangle is valid
-//
+//!
+//! Helpers: point, grid, compressor
+//!
+//! Approach:
+//! - parse every tile to Point2D
+//! - for each tiles combination, compute rectangle area
+//! - finally, select the max
+//!
+//! Part 2:
+//! - generate grid: since 100_000 * 100_000 is huge,
+//!   compress the coordinates to avoid storing useless information
+//! - draw perimeter (the vertices of the polygon are already ordered)
+//! - flood fill (BFS) to detect outside
+//! - compute summed area table to quickly check if rectangle is valid
+//!
 
 use advent_of_code::common::{cartesian_pairs, read_input, unordered_pairs};
 use advent_of_code::compressor::Compressor;

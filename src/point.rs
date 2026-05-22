@@ -1,4 +1,4 @@
-use std::ops::{Add, AddAssign, Sub, SubAssign};
+use std::ops::{Add, AddAssign, Mul, Neg, Sub, SubAssign};
 
 pub const NORTH: Point2D = Point2D { x: 0, y: -1 };
 pub const NORTH_EAST: Point2D = Point2D { x: 1, y: -1 };
@@ -26,10 +26,11 @@ impl Point2D {
     }
 
     pub fn parse(value: &str) -> Self {
-        let mut coords = value.splitn(2, ',');
-        let x = coords.next().unwrap().parse::<isize>().unwrap();
-        let y = coords.next().unwrap().parse::<isize>().unwrap();
-        Self { x, y }
+        let (x, y) = value.split_once(',').unwrap();
+        Self {
+            x: x.trim().parse().unwrap(),
+            y: y.trim().parse().unwrap(),
+        }
     }
 
     pub fn bounds(a: Self, b: Self) -> [isize; 4] {
@@ -39,6 +40,7 @@ impl Point2D {
     pub fn rectangle_area(a: Self, b: Self) -> isize {
         let base = (a.x - b.x).abs() + 1;
         let height = (a.y - b.y).abs() + 1;
+        
         base * height
     }
 }
@@ -46,7 +48,7 @@ impl Point2D {
 impl Add for Point2D {
     type Output = Self;
 
-    fn add(self, other: Self) -> Self {
+    fn add(self, other: Self) -> Self::Output {
         Self {
             x: self.x + other.x,
             y: self.y + other.y,
@@ -64,7 +66,7 @@ impl AddAssign for Point2D {
 impl Sub for Point2D {
     type Output = Self;
 
-    fn sub(self, other: Self) -> Self {
+    fn sub(self, other: Self) -> Self::Output {
         Self {
             x: self.x - other.x,
             y: self.y - other.y,
@@ -76,6 +78,28 @@ impl SubAssign for Point2D {
     fn sub_assign(&mut self, other: Self) {
         self.x -= other.x;
         self.y -= other.y;
+    }
+}
+
+impl Mul<isize> for Point2D {
+    type Output = Self;
+
+    fn mul(self, rhs: isize) -> Self::Output {
+        Self {
+            x: self.x * rhs,
+            y: self.y * rhs,
+        }
+    }
+}
+
+impl Neg for Point2D {
+    type Output = Self;
+
+    fn neg(self) -> Self::Output {
+        Self {
+            x: -self.x,
+            y: -self.y,
+        }
     }
 }
 
@@ -93,16 +117,19 @@ impl Point3D {
 
     pub fn parse(value: &str) -> Self {
         let mut coords = value.splitn(3, ',');
+        
         let x = coords.next().unwrap().parse::<isize>().unwrap();
         let y = coords.next().unwrap().parse::<isize>().unwrap();
         let z = coords.next().unwrap().parse::<isize>().unwrap();
+        
         Self { x, y, z }
     }
 
-    pub fn distance_squared(a: Self, b: Self) -> isize {
+    pub fn straight_distance_squared(a: Self, b: Self) -> isize {
         let dx = a.x - b.x;
         let dy = a.y - b.y;
         let dz = a.z - b.z;
+        
         dx * dx + dy * dy + dz * dz
     }
 }

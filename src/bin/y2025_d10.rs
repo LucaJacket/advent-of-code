@@ -1,19 +1,19 @@
-//
-// Approach:
-// - parse every diagram and button to Vec<bool>
-// - BFS search:
-//   at each choice, press button and check if target is reached
-// - Pruning:
-//   pressing twice a button cancels its effect
-//   order of pressing is irrelevant
-//
-// Part 2:
-// - parse every requirement to Vec<usize>
-// - DFS search:
-//   find all possible combinations of buttons which match the parities of the requirements
-//   for each of those, compute remaining requirements, halve and recurse
-//   at least one of those combinations will lead to a possible solution
-//
+//!
+//! Approach:
+//! - parse every diagram and button to Vec<bool>
+//! - BFS search:
+//!   at each choice, press button and check if target is reached
+//! - Pruning:
+//!   pressing twice a button cancels its effect
+//!   order of pressing is irrelevant
+//!
+//! Part 2:
+//! - parse every requirement to Vec<usize>
+//! - DFS search:
+//!   find all possible combinations of buttons which match the parities of the requirements
+//!   for each of those, compute remaining requirements, halve and recurse
+//!   at least one of those combinations will lead to a possible solution
+//!
 
 use advent_of_code::common::read_input;
 use std::collections::{HashMap, HashSet, VecDeque};

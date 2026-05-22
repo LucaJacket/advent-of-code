@@ -1,4 +1,4 @@
-use crate::point::{DIRS4, DIRS8, Point2D};
+use crate::point::{Point2D, DIRS4, DIRS8};
 use std::ops::{Index, IndexMut};
 
 #[derive(Clone, PartialEq, Eq, Hash, Debug)]
@@ -20,18 +20,15 @@ impl<T> Grid<T> {
         }
     }
 
-    pub fn is_in_bounds(&self, point: Point2D) -> bool {
-        (0..self.width as isize).contains(&point.x) && (0..self.height as isize).contains(&point.y)
-    }
-
     fn neighbors(
         &self,
         point: Point2D,
         dirs: impl IntoIterator<Item = Point2D>,
     ) -> impl Iterator<Item = Point2D> {
+        let (w, h) = (self.width as isize, self.height as isize);
         dirs.into_iter()
             .map(move |dir| dir + point)
-            .filter(|&neighbor| self.is_in_bounds(neighbor))
+            .filter(move |&neighbor| (0..w).contains(&neighbor.x) && (0..h).contains(&neighbor.y))
     }
 
     pub fn neighbors4(&self, point: Point2D) -> impl Iterator<Item = Point2D> {
@@ -57,9 +54,12 @@ impl<T> IndexMut<Point2D> for Grid<T> {
     }
 }
 
-impl Grid<u8> {
+impl Grid<char> {
     pub fn parse(value: &str) -> Self {
-        let raw = value.lines().map(str::as_bytes).collect::<Vec<_>>();
+        let raw = value
+            .lines()
+            .map(|line| line.chars().collect::<Vec<_>>())
+            .collect::<Vec<_>>();
 
         let data = raw.concat();
         let width = raw[0].len();

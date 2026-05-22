@@ -23,8 +23,8 @@ fn main() {
 
 fn parse_range(range: &str) -> RangeInclusive<u64> {
     let (start, end) = range.split_once('-').unwrap();
-    let start = start.parse::<u64>().unwrap();
-    let end = end.parse::<u64>().unwrap();
+    let start = start.parse().unwrap();
+    let end = end.parse().unwrap();
     start..=end
 }
 
@@ -49,7 +49,7 @@ fn part1(input: &str) -> usize {
     let ranges = ranges.lines().map(parse_range).collect::<Vec<_>>();
     ingredients
         .lines()
-        .map(|line| line.parse::<u64>().unwrap())
+        .map(|line| line.parse().unwrap())
         .filter(|&ingredient| ranges.iter().any(|range| range.contains(&ingredient)))
         .count()
 }

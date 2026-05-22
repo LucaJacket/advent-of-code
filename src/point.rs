@@ -26,11 +26,12 @@ impl Point2D {
     }
 
     pub fn parse(value: &str) -> Self {
-        let (x, y) = value.split_once(',').unwrap();
-        Self {
-            x: x.trim().parse().unwrap(),
-            y: y.trim().parse().unwrap(),
-        }
+        let mut coords = value.splitn(2, ',');
+
+        let x = coords.next().unwrap().parse().unwrap();
+        let y = coords.next().unwrap().parse().unwrap();
+
+        Self { x, y }
     }
 
     pub fn bounds(a: Self, b: Self) -> [isize; 4] {
@@ -40,7 +41,7 @@ impl Point2D {
     pub fn rectangle_area(a: Self, b: Self) -> isize {
         let base = (a.x - b.x).abs() + 1;
         let height = (a.y - b.y).abs() + 1;
-        
+
         base * height
     }
 }
@@ -117,11 +118,11 @@ impl Point3D {
 
     pub fn parse(value: &str) -> Self {
         let mut coords = value.splitn(3, ',');
-        
-        let x = coords.next().unwrap().parse::<isize>().unwrap();
-        let y = coords.next().unwrap().parse::<isize>().unwrap();
-        let z = coords.next().unwrap().parse::<isize>().unwrap();
-        
+
+        let x = coords.next().unwrap().parse().unwrap();
+        let y = coords.next().unwrap().parse().unwrap();
+        let z = coords.next().unwrap().parse().unwrap();
+
         Self { x, y, z }
     }
 
@@ -129,7 +130,7 @@ impl Point3D {
         let dx = a.x - b.x;
         let dy = a.y - b.y;
         let dz = a.z - b.z;
-        
+
         dx * dx + dy * dy + dz * dz
     }
 }

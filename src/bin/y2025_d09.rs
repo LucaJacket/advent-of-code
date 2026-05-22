@@ -43,10 +43,13 @@ trait Extension {
 
 impl Extension for Grid<Cell> {
     fn draw_perimeter(&mut self, vertices: &[Point2D]) {
-        for i in 0..vertices.len() {
+        let n = vertices.len();
+        for i in 0..n {
             let a = vertices[i];
-            let b = vertices[(i + 1).rem_euclid(vertices.len())];
+            let b = vertices[(i + 1).rem_euclid(n)];
+            
             let [start_x, end_x, start_y, end_y] = Point2D::bounds(a, b);
+            
             for y in start_y..=end_y {
                 self[Point2D::new(start_x, y)] = Cell::Border;
             }
@@ -63,7 +66,9 @@ impl Extension for Grid<Cell> {
             if self[point] != Cell::Inside {
                 continue;
             }
+            
             self[point] = Cell::Outside;
+            
             for neighbor in self.neighbors4(point) {
                 queue.push_back(neighbor);
             }
@@ -75,10 +80,12 @@ impl Extension for Grid<Cell> {
 
         for (x, y) in cartesian_pairs(self.width, self.height) {
             let point = Point2D::new(x as isize, y as isize);
+            
             let value = (self[point] == Cell::Outside) as u64;
             let above = table[Point2D::new(point.x + 1, point.y)];
             let left = table[Point2D::new(point.x, point.y + 1)];
             let above_left = table[point];
+            
             table[Point2D::new(point.x + 1, point.y + 1)] = value + above + left - above_left;
         }
 
@@ -113,10 +120,12 @@ fn part2(input: &str) -> isize {
         .filter(|&(i, j)| {
             let [start_x, end_x, start_y, end_y] =
                 Point2D::bounds(compressed_tiles[i], compressed_tiles[j]);
+            
             let full = table[Point2D::new(end_x + 1, end_y + 1)];
             let above = table[Point2D::new(end_x + 1, start_y + 1)];
             let left = table[Point2D::new(start_x + 1, end_y + 1)];
             let above_left = table[Point2D::new(start_x + 1, start_y + 1)];
+            
             full + above_left - above - left == 0
         })
         .map(|(i, j)| Point2D::rectangle_area(tiles[i], tiles[j]))

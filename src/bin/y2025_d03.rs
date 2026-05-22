@@ -36,16 +36,20 @@ fn extract_total_power(bank: &[char], n: usize) -> u64 {
 fn part1(input: &str) -> u64 {
     input
         .lines()
-        .map(|bank| bank.chars().collect::<Vec<_>>())
-        .map(|bank| extract_total_power(&bank, 2))
+        .map(|bank| {
+            let bank = bank.chars().collect::<Vec<_>>();
+            extract_total_power(&bank, 2)
+        })
         .sum()
 }
 
 fn part2(input: &str) -> u64 {
     input
         .lines()
-        .map(|bank| bank.chars().collect::<Vec<_>>())
-        .map(|bank| extract_total_power(&bank, 12))
+        .map(|bank| {
+            let bank = bank.chars().collect::<Vec<_>>();
+            extract_total_power(&bank, 12)
+        })
         .sum()
 }
 

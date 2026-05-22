@@ -61,13 +61,12 @@ impl Extension for Grid<char> {
     fn solve_by_rows(&self) -> u64 {
         let h = self.height as isize;
         let operands_by_row = |left_bound, right_bound| {
-            (0..h - 1)
-                .map(move |y| {
-                    (left_bound..right_bound)
-                        .map(move |x| self[Point2D::new(x, y)])
-                        .filter(|&digit| digit.is_ascii_digit())
-                })
-                .map(parse_from_digits)
+            (0..h - 1).map(move |y| {
+                let digits = (left_bound..right_bound)
+                    .map(move |x| self[Point2D::new(x, y)])
+                    .filter(|&digit| digit.is_ascii_digit());
+                parse_from_digits(digits)
+            })
         };
         self.solve(operands_by_row)
     }
@@ -75,13 +74,12 @@ impl Extension for Grid<char> {
     fn solve_by_columns(&self) -> u64 {
         let h = self.height as isize;
         let operands_by_column = |left_bound, right_bound| {
-            (left_bound..right_bound)
-                .map(move |x| {
-                    (0..h - 1)
-                        .map(move |y| self[Point2D::new(x, y)])
-                        .filter(|&digit| digit.is_ascii_digit())
-                })
-                .map(parse_from_digits)
+            (left_bound..right_bound).map(move |x| {
+                let digits = (0..h - 1)
+                    .map(move |y| self[Point2D::new(x, y)])
+                    .filter(|&digit| digit.is_ascii_digit());
+                parse_from_digits(digits)
+            })
         };
         self.solve(operands_by_column)
     }

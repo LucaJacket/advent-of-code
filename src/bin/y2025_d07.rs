@@ -20,15 +20,17 @@ fn main() {
     println!("Part 2: {}", part2(&input));
 }
 
-const START: u8 = b'S';
-const SPLITTER: u8 = b'^';
-const EMPTY: u8 = b'.';
+const START: char = 'S';
+const SPLITTER: char = '^';
+const EMPTY: char = '.';
 
-fn step(current: &[usize], splitters: &[u8]) -> (Vec<usize>, usize) {
-    let mut next = vec![0; current.len()];
+fn step(current: &[usize], splitters: &[char]) -> (Vec<usize>, usize) {
+    let n = current.len();
+    
+    let mut next = vec![0; n];
     let mut splittings = 0;
 
-    for i in 0..current.len() {
+    for i in 0..n {
         let beams = current[i];
         if beams == 0 {
             continue;
@@ -39,7 +41,7 @@ fn step(current: &[usize], splitters: &[u8]) -> (Vec<usize>, usize) {
                 if i > 0 {
                     next[i - 1] += beams;
                 }
-                if i + 1 < current.len() {
+                if i + 1 < n {
                     next[i + 1] += beams;
                 }
             }
@@ -52,14 +54,18 @@ fn step(current: &[usize], splitters: &[u8]) -> (Vec<usize>, usize) {
 }
 
 fn part1(input: &str) -> usize {
-    let mut lines = input.lines().map(str::as_bytes);
-    let start = lines
-        .next()
-        .unwrap()
+    let levels = input
+        .lines()
+        .map(|line| line.chars().collect::<Vec<_>>())
+        .collect::<Vec<_>>();
+
+    let start = levels[0]
         .iter()
         .map(|&x| (x == START) as usize)
         .collect::<Vec<_>>();
-    lines
+
+    levels[1..]
+        .iter()
         .scan(start, |current, splitters| {
             let (next, splittings) = step(current, splitters);
             *current = next;
@@ -69,14 +75,18 @@ fn part1(input: &str) -> usize {
 }
 
 fn part2(input: &str) -> usize {
-    let mut lines = input.lines().map(str::as_bytes);
-    let start = lines
-        .next()
-        .unwrap()
+    let levels = input
+        .lines()
+        .map(|line| line.chars().collect::<Vec<_>>())
+        .collect::<Vec<_>>();
+
+    let start = levels[0]
         .iter()
         .map(|&x| (x == START) as usize)
         .collect::<Vec<_>>();
-    lines
+
+    levels[1..]
+        .iter()
         .fold(start, |current, splitters| {
             let (next, _) = step(&current, splitters);
             next

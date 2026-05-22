@@ -23,13 +23,14 @@ const START: i32 = 50;
 const SIZE: i32 = 100;
 
 fn parse_rotation(rotation: &str) -> i32 {
-    let (direction, distance) = rotation.split_at(1);
-    let distance = distance.parse::<i32>().unwrap();
-    match direction {
-        "L" => -distance,
-        "R" => distance,
+    let mut chars = rotation.chars();
+    let direction = match chars.next().unwrap() {
+        'L' => -1,
+        'R' => 1,
         _ => unreachable!(),
-    }
+    };
+    let distance = chars.as_str().parse::<i32>().unwrap();
+    direction * distance
 }
 
 fn part1(input: &str) -> usize {

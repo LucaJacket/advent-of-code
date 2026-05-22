@@ -34,11 +34,10 @@ fn parse_machine(machine: &str) -> (Vec<bool>, Vec<Vec<bool>>, Vec<usize>) {
             diagram
                 .trim_start_matches('[')
                 .trim_end_matches(']')
-                .as_bytes()
-                .iter()
-                .map(|&ch| match ch {
-                    b'#' => true,
-                    b'.' => false,
+                .chars()
+                .map(|light| match light {
+                    '#' => true,
+                    '.' => false,
                     _ => unreachable!(),
                 })
                 .collect::<Vec<_>>()
@@ -51,7 +50,7 @@ fn parse_machine(machine: &str) -> (Vec<bool>, Vec<Vec<bool>>, Vec<usize>) {
                 .trim_start_matches('{')
                 .trim_end_matches('}')
                 .split(',')
-                .map(|num| num.parse::<usize>().unwrap())
+                .map(|num| num.parse().unwrap())
                 .collect::<Vec<_>>()
         })
         .unwrap();
@@ -96,11 +95,11 @@ fn configure_lights(diagram: &[bool], buttons: &[Vec<bool>]) -> impl Iterator<It
 
                 let mut next = current.clone();
                 next[i] = true;
-                let next_output = output
-                    .iter()
-                    .zip(buttons[i].iter())
-                    .map(|(&x, &y)| x ^ y)
-                    .collect::<Vec<_>>();
+
+                let mut next_output = output.clone();
+                for j in 0..n {
+                    next_output[j] ^= buttons[i][j];
+                }
 
                 queue.push_back((next, next_output));
             }

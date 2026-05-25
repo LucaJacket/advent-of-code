@@ -33,7 +33,7 @@ trait Extension {
 
 impl Extension for Grid<char> {
     fn accessible(&self) -> impl Iterator<Item = Point2D> {
-        let few_neighbors = |point: Point2D| {
+        let has_few_neighbors = |point: Point2D| {
             self.neighbors8(point)
                 .filter(|&neighbor| self[neighbor] == ROLL)
                 .take(THRESHOLD)
@@ -42,11 +42,11 @@ impl Extension for Grid<char> {
         };
         cartesian_pairs(self.width, self.height)
             .map(|(x, y)| Point2D::new(x as isize, y as isize))
-            .filter(move |&point| self[point] == ROLL && few_neighbors(point))
+            .filter(move |&point| self[point] == ROLL && has_few_neighbors(point))
     }
 
     fn remove(&mut self) -> usize {
-        let accessible = self.accessible().collect::<Vec<_>>();
+        let accessible: Vec<Point2D> = self.accessible().collect();
         for &point in &accessible {
             self[point] = EMPTY;
         }
@@ -56,11 +56,13 @@ impl Extension for Grid<char> {
 
 fn part1(input: &str) -> usize {
     let grid = Grid::parse(input);
+
     grid.accessible().count()
 }
 
 fn part2(input: &str) -> usize {
     let mut grid = Grid::parse(input);
+
     repeat_with(move || grid.remove())
         .take_while(|&removed| removed > 0)
         .sum()

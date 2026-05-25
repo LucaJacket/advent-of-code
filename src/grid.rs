@@ -56,19 +56,12 @@ impl<T> IndexMut<Point2D> for Grid<T> {
 
 impl Grid<char> {
     pub fn parse(value: &str) -> Self {
-        let raw = value
-            .lines()
-            .map(|line| line.chars().collect::<Vec<_>>())
-            .collect::<Vec<_>>();
-
-        let data = raw.concat();
-        let width = raw[0].len();
-        let height = raw.len();
+        let raw: Vec<Vec<char>> = value.lines().map(|line| line.chars().collect()).collect();
 
         Self {
-            data,
-            width,
-            height,
+            data: raw.concat(),
+            width: raw[0].len(),
+            height: raw.len(),
         }
     }
 }

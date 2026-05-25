@@ -28,8 +28,9 @@ fn main() {
 
 fn build_connections(junctions: &[Point3D]) -> Vec<(usize, usize)> {
     let mut connections = unordered_pairs(junctions.len()).collect::<Vec<_>>();
-    connections
-        .sort_unstable_by_key(|&(i, j)| Point3D::straight_distance_squared(junctions[i], junctions[j]));
+    connections.sort_unstable_by_key(|&(i, j)| {
+        Point3D::straight_distance_squared(junctions[i], junctions[j])
+    });
 
     connections
 }

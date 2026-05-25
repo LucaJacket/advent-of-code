@@ -129,11 +129,13 @@ impl Region {
             .for_each(|(copy, index)| {
                 for shape in &shapes[index] {
                     for (x, y) in cartesian_pairs(self.width - SIZE + 1, self.height - SIZE + 1) {
-                        let row = once(copy).chain(shape.full().map(move |point| {
-                            total_presents
-                                + (y + point.y as usize) * self.width
-                                + (x + point.x as usize)
-                        }));
+                        let row = once(copy)
+                            .chain(shape.full().map(move |point| {
+                                total_presents
+                                    + (y + point.y as usize) * self.width
+                                    + (x + point.x as usize)
+                            }))
+                            .map(|col| col + 1);
                         dlx.add_row(row);
                     }
                 }

@@ -8,17 +8,17 @@ pub struct Compressor {
 
 impl Compressor {
     pub fn new(points: &[Point2D]) -> Self {
-        let mut unique_x = points
+        let mut unique_x: Vec<isize> = points
             .iter()
             .flat_map(|point| [point.x - 1, point.x, point.x + 1])
-            .collect::<Vec<_>>();
+            .collect();
         unique_x.sort_unstable();
         unique_x.dedup();
 
-        let mut unique_y = points
+        let mut unique_y: Vec<isize> = points
             .iter()
             .flat_map(|point| [point.y - 1, point.y, point.y + 1])
-            .collect::<Vec<_>>();
+            .collect();
         unique_y.sort_unstable();
         unique_y.dedup();
 

@@ -37,7 +37,7 @@ fn part1(input: &str) -> u64 {
     input
         .lines()
         .map(|bank| {
-            let bank = bank.chars().collect::<Vec<_>>();
+            let bank: Vec<char> = bank.chars().collect();
             extract_total_power(&bank, 2)
         })
         .sum()
@@ -47,7 +47,7 @@ fn part2(input: &str) -> u64 {
     input
         .lines()
         .map(|bank| {
-            let bank = bank.chars().collect::<Vec<_>>();
+            let bank: Vec<char> = bank.chars().collect();
             extract_total_power(&bank, 12)
         })
         .sum()

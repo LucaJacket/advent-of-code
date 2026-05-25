@@ -28,10 +28,10 @@ impl Point2D {
     pub fn parse(value: &str) -> Self {
         let mut coords = value.splitn(2, ',');
 
-        let x = coords.next().unwrap().parse().unwrap();
-        let y = coords.next().unwrap().parse().unwrap();
-
-        Self { x, y }
+        Self {
+            x: coords.next().unwrap().parse::<isize>().unwrap(),
+            y: coords.next().unwrap().parse::<isize>().unwrap(),
+        }
     }
 
     pub fn bounds(a: Self, b: Self) -> [isize; 4] {
@@ -119,11 +119,11 @@ impl Point3D {
     pub fn parse(value: &str) -> Self {
         let mut coords = value.splitn(3, ',');
 
-        let x = coords.next().unwrap().parse().unwrap();
-        let y = coords.next().unwrap().parse().unwrap();
-        let z = coords.next().unwrap().parse().unwrap();
-
-        Self { x, y, z }
+        Self {
+            x: coords.next().unwrap().parse::<isize>().unwrap(),
+            y: coords.next().unwrap().parse::<isize>().unwrap(),
+            z: coords.next().unwrap().parse::<isize>().unwrap(),
+        }
     }
 
     pub fn straight_distance_squared(a: Self, b: Self) -> isize {

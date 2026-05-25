@@ -1,3 +1,16 @@
+//!
+//! Dancing Links data structure implementation:
+//! this version is not 0 indexed;
+//! this version stores nodes in a Vec so a Node use indexes to refer to its neighbors;
+//! it also has a small addition to deal with problems where not all columns are required;
+//! Node stores references to its neighbors and the column header (through indexes)
+//! and the row index;
+//! the final struct stores nodes, the sizes of the columns, the number of rows and the number of
+//! required columns;
+//! the row header is always at index 0, the n column headers are always at index 1 to n;
+//! to match the same indexing of nodes, columns has num_columns + 1 elements.
+//!
+
 pub struct Node {
     left: usize,
     right: usize,
@@ -8,92 +21,103 @@ pub struct Node {
     row: usize,
 }
 
-pub struct Column {
-    index: usize,
-    size: usize,
-    is_required: bool,
-}
-
 pub struct DancingLinksX {
     nodes: Vec<Node>,
-    columns: Vec<Column>,
+
+    columns: Vec<usize>,
     rows: usize,
-    header: usize,
+
     required: usize,
 }
 
 impl DancingLinksX {
     pub fn new(num_columns: usize, required: usize) -> Self {
-        let mut nodes = Vec::with_capacity(num_columns + 1);
-        let mut columns = Vec::with_capacity(num_columns);
+        let mut nodes: Vec<Node> = Vec::with_capacity(num_columns + 1);
 
         nodes.push(Node {
             left: 0,
             right: 0,
             up: 0,
             down: 0,
+
             col: 0,
             row: 0,
         });
 
-        for i in 0..num_columns {
-            let idx = nodes.len();
-
+        for idx in 1..=num_columns {
             nodes.push(Node {
                 left: idx - 1,
                 right: 0,
                 up: idx,
                 down: idx,
-                col: i,
-                row: usize::MAX,
+
+                col: idx,
+                row: 0,
             });
 
-            nodes[idx - 1].right = idx;
-            nodes[0].left = idx;
+            let left = nodes[idx].left;
+            let right = nodes[idx].right;
 
-            columns.push(Column {
-                index: idx,
-                size: 0,
-                is_required: i < required,
-            });
+            nodes[left].right = idx;
+            nodes[right].left = idx;
         }
 
         Self {
             nodes,
-            columns,
-            rows: 0,
-            header: 0,
+            columns: vec![0; num_columns + 1],
+            rows: 1,
             required,
         }
     }
 
     pub fn add_row(&mut self, row: impl IntoIterator<Item = usize>) {
+        let mut cols = row.into_iter();
+
+        let col = cols.next().unwrap();
         let first = self.nodes.len();
 
-        for c in row.into_iter() {
-            self.columns[c].size += 1;
+        self.nodes.push(Node {
+            left: first,
+            right: first,
+            up: self.nodes[col].up,
+            down: col,
 
+            col,
+            row: self.rows,
+        });
+
+        let up = self.nodes[first].up;
+        let down = self.nodes[first].down;
+
+        self.nodes[up].down = first;
+        self.nodes[down].up = first;
+
+        self.columns[col] += 1;
+
+        for col in cols {
             let idx = self.nodes.len();
-            let col = self.columns[c].index;
 
             self.nodes.push(Node {
-                left: if idx == first { idx } else { idx - 1 },
+                left: idx - 1,
                 right: first,
                 up: self.nodes[col].up,
                 down: col,
-                col: c,
+
+                col,
                 row: self.rows,
             });
 
-            let up = self.nodes[col].up;
+            let left = self.nodes[idx].left;
+            let right = self.nodes[idx].right;
+            let up = self.nodes[idx].up;
+            let down = self.nodes[idx].down;
 
-            self.nodes[col].up = idx;
+            self.nodes[left].right = idx;
+            self.nodes[right].left = idx;
             self.nodes[up].down = idx;
+            self.nodes[down].up = idx;
 
-            if idx != first {
-                self.nodes[idx - 1].right = idx;
-                self.nodes[first].left = idx;
-            }
+            self.columns[col] += 1;
         }
 
         self.rows += 1;
@@ -107,32 +131,27 @@ impl DancingLinksX {
         self.nodes[right].left = left;
 
         let mut row = self.nodes[col].down;
-
         while row != col {
             let mut node = self.nodes[row].right;
-
             while node != row {
+                self.columns[self.nodes[node].col] -= 1;
+
                 let up = self.nodes[node].up;
                 let down = self.nodes[node].down;
 
                 self.nodes[up].down = down;
                 self.nodes[down].up = up;
 
-                self.columns[self.nodes[node].col].size -= 1;
-
                 node = self.nodes[node].right;
             }
-
             row = self.nodes[row].down;
         }
     }
 
     fn uncover(&mut self, col: usize) {
         let mut row = self.nodes[col].up;
-
         while row != col {
             let mut node = self.nodes[row].left;
-
             while node != row {
                 let up = self.nodes[node].up;
                 let down = self.nodes[node].down;
@@ -140,11 +159,10 @@ impl DancingLinksX {
                 self.nodes[up].down = node;
                 self.nodes[down].up = node;
 
-                self.columns[self.nodes[node].col].size += 1;
+                self.columns[self.nodes[node].col] += 1;
 
                 node = self.nodes[node].left;
             }
-
             row = self.nodes[row].up;
         }
 
@@ -162,71 +180,58 @@ impl DancingLinksX {
 
         let col = self.choose_column();
 
-        *satisfied += 1;
+        if col <= self.required {
+            *satisfied += 1;
+        }
         self.cover(col);
 
         let mut row = self.nodes[col].down;
-
         while row != col {
-            solution.push(self.nodes[row].row);
-
             let mut node = self.nodes[row].right;
             while node != row {
-                let col = self.nodes[node].col;
-                if self.columns[col].is_required {
+                if self.nodes[node].col <= self.required {
                     *satisfied += 1;
                 }
-                let col = self.columns[col].index;
-                self.cover(col);
-
+                self.cover(self.nodes[node].col);
                 node = self.nodes[node].right;
             }
 
+            solution.push(self.nodes[row].row);
             if let Some(solution) = self.search(solution, satisfied) {
                 return Some(solution);
             }
-
             solution.pop();
 
             let mut node = self.nodes[row].left;
             while node != row {
-                let col = self.nodes[node].col;
-                if self.columns[col].is_required {
+                self.uncover(self.nodes[node].col);
+                if self.nodes[node].col <= self.required {
                     *satisfied -= 1;
                 }
-                let col = self.columns[col].index;
-                self.uncover(col);
-
                 node = self.nodes[node].left;
             }
-
             row = self.nodes[row].down;
         }
 
         self.uncover(col);
-        *satisfied -= 1;
+        if col <= self.required {
+            *satisfied -= 1;
+        }
 
         None
     }
 
     fn choose_column(&self) -> usize {
-        let mut best = self.nodes[self.header].right;
-        let mut min_size = usize::MAX;
+        let mut best = self.nodes[0].right;
+        let mut min_size = self.columns[best];
 
-        let mut col = best;
-
-        while col != self.header {
-            let c = self.nodes[col].col;
-
-            if self.columns[c].is_required {
-                let size = self.columns[c].size;
-
-                if size < min_size {
-                    min_size = size;
-                    best = col;
-                }
+        let mut col = self.nodes[best].right;
+        while col != 0 && col <= self.required {
+            let size = self.columns[col];
+            if size < min_size {
+                min_size = size;
+                best = col;
             }
-
             col = self.nodes[col].right;
         }
 

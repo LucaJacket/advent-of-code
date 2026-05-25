@@ -32,7 +32,7 @@ impl Extension for HashMap<&str, Vec<&str>> {
         let mut in_degree = HashMap::new();
         for (&device, outputs) in self.iter() {
             in_degree.entry(device).or_insert(0);
-            
+
             for &output in outputs {
                 *in_degree.entry(output).or_insert(0) += 1;
             }

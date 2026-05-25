@@ -26,7 +26,7 @@ const EMPTY: char = '.';
 
 fn step(current: &[usize], splitters: &[char]) -> (Vec<usize>, usize) {
     let n = current.len();
-    
+
     let mut next = vec![0; n];
     let mut splittings = 0;
 

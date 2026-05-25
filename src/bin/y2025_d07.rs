@@ -12,6 +12,7 @@
 //!
 
 use advent_of_code::common::read_input;
+use advent_of_code::grid::Grid;
 
 fn main() {
     let input = read_input(2025, 7);
@@ -27,7 +28,7 @@ const EMPTY: char = '.';
 fn step(current: &[usize], splitters: &[char]) -> (Vec<usize>, usize) {
     let n = current.len();
 
-    let mut next = vec![0; n];
+    let mut next: Vec<usize> = vec![0; n];
     let mut splittings = 0;
 
     for i in 0..n {
@@ -54,20 +55,17 @@ fn step(current: &[usize], splitters: &[char]) -> (Vec<usize>, usize) {
 }
 
 fn part1(input: &str) -> usize {
-    let levels = input
-        .lines()
-        .map(|line| line.chars().collect::<Vec<_>>())
-        .collect::<Vec<_>>();
+    let levels: Grid<char> = Grid::parse(input);
 
-    let start = levels[0]
-        .iter()
-        .map(|&x| (x == START) as usize)
-        .collect::<Vec<_>>();
-
-    levels[1..]
-        .iter()
+    let start: Vec<usize> = levels
+        .row(0)
+        .into_iter()
+        .map(|ch| (ch == START) as usize)
+        .collect();
+    (1..levels.height as isize)
+        .map(|row| levels.row(row))
         .scan(start, |current, splitters| {
-            let (next, splittings) = step(current, splitters);
+            let (next, splittings) = step(current, &splitters);
             *current = next;
             Some(splittings)
         })
@@ -75,20 +73,17 @@ fn part1(input: &str) -> usize {
 }
 
 fn part2(input: &str) -> usize {
-    let levels = input
-        .lines()
-        .map(|line| line.chars().collect::<Vec<_>>())
-        .collect::<Vec<_>>();
+    let levels: Grid<char> = Grid::parse(input);
 
-    let start = levels[0]
-        .iter()
-        .map(|&x| (x == START) as usize)
-        .collect::<Vec<_>>();
-
-    levels[1..]
-        .iter()
+    let start: Vec<usize> = levels
+        .row(0)
+        .into_iter()
+        .map(|ch| (ch == START) as usize)
+        .collect();
+    (1..levels.height as isize)
+        .map(|row| levels.row(row))
         .fold(start, |current, splitters| {
-            let (next, _) = step(&current, splitters);
+            let (next, _) = step(&current, &splitters);
             next
         })
         .into_iter()
@@ -97,7 +92,7 @@ fn part2(input: &str) -> usize {
 
 #[cfg(test)]
 mod tests {
-    use crate::{part1, part2};
+    use crate::*;
 
     const EXAMPLE: &str = ".......S.......
 ...............

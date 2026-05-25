@@ -27,6 +27,7 @@ trait Extension {
     where
         F: Fn(isize, isize) -> I,
         I: Iterator<Item = u64>;
+
     fn solve_by_rows(&self) -> u64;
     fn solve_by_columns(&self) -> u64;
 }
@@ -60,25 +61,21 @@ impl Extension for Grid<char> {
 
     fn solve_by_rows(&self) -> u64 {
         let h = self.height as isize;
-        let operands_by_row = |left_bound, right_bound| {
+        let operands_by_row = |left_bound: isize, right_bound: isize| {
             (0..h - 1).map(move |y| {
-                let digits = (left_bound..right_bound)
-                    .map(move |x| self[Point2D::new(x, y)])
-                    .filter(|&digit| digit.is_ascii_digit());
-                parse_from_digits(digits)
+                let (l, r) = (left_bound as usize, right_bound as usize);
+                let digits: &[char] = &self.row(y)[l..r];
+                parse_from_digits(digits.iter().copied())
             })
         };
         self.solve(operands_by_row)
     }
 
     fn solve_by_columns(&self) -> u64 {
-        let h = self.height as isize;
-        let operands_by_column = |left_bound, right_bound| {
+        let operands_by_column = |left_bound: isize, right_bound: isize| {
             (left_bound..right_bound).map(move |x| {
-                let digits = (0..h - 1)
-                    .map(move |y| self[Point2D::new(x, y)])
-                    .filter(|&digit| digit.is_ascii_digit());
-                parse_from_digits(digits)
+                let digits: &[char] = &self.col(x);
+                parse_from_digits(digits.iter().copied())
             })
         };
         self.solve(operands_by_column)
@@ -86,18 +83,20 @@ impl Extension for Grid<char> {
 }
 
 fn part1(input: &str) -> u64 {
-    let table = Grid::parse(input);
+    let table: Grid<char> = Grid::parse(input);
+
     table.solve_by_rows()
 }
 
 fn part2(input: &str) -> u64 {
-    let table = Grid::parse(input);
+    let table: Grid<char> = Grid::parse(input);
+
     table.solve_by_columns()
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::{part1, part2};
+    use crate::*;
 
     const EXAMPLE: &str = "123 328  51 64 
  45 64  387 23 

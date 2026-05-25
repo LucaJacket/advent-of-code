@@ -23,16 +23,15 @@ fn main() {
 
 fn parse_range(range: &str) -> RangeInclusive<u64> {
     let (start, end) = range.split_once('-').unwrap();
-    let start = start.parse().unwrap();
-    let end = end.parse().unwrap();
+    let start = start.parse::<u64>().unwrap();
+    let end = end.parse::<u64>().unwrap();
     start..=end
 }
 
-fn merge_ranges(ranges: impl IntoIterator<Item = RangeInclusive<u64>>) -> Vec<RangeInclusive<u64>> {
-    let mut sorted = ranges.into_iter().collect::<Vec<_>>();
-    sorted.sort_unstable_by_key(|range| *range.start());
+fn merge_ranges(mut ranges: Vec<RangeInclusive<u64>>) -> Vec<RangeInclusive<u64>> {
+    ranges.sort_unstable_by_key(|range| *range.start());
 
-    sorted.into_iter().fold(Vec::new(), |mut merged, range| {
+    ranges.into_iter().fold(Vec::new(), |mut merged, range| {
         match merged.last_mut() {
             Some(current) if current.contains(range.start()) => {
                 let end = (*current.end()).max(*range.end());
@@ -46,17 +45,18 @@ fn merge_ranges(ranges: impl IntoIterator<Item = RangeInclusive<u64>>) -> Vec<Ra
 
 fn part1(input: &str) -> usize {
     let (ranges, ingredients) = input.split_once("\n\n").unwrap();
-    let ranges = ranges.lines().map(parse_range).collect::<Vec<_>>();
+    let ranges: Vec<RangeInclusive<u64>> = ranges.lines().map(parse_range).collect();
     ingredients
         .lines()
-        .map(|line| line.parse().unwrap())
+        .map(|line| line.parse::<u64>().unwrap())
         .filter(|&ingredient| ranges.iter().any(|range| range.contains(&ingredient)))
         .count()
 }
 
 fn part2(input: &str) -> usize {
     let (ranges, _) = input.split_once("\n\n").unwrap();
-    merge_ranges(ranges.lines().map(parse_range))
+    let ranges: Vec<RangeInclusive<u64>> = ranges.lines().map(parse_range).collect();
+    merge_ranges(ranges)
         .into_iter()
         .map(RangeInclusive::count)
         .sum()
@@ -64,7 +64,7 @@ fn part2(input: &str) -> usize {
 
 #[cfg(test)]
 mod tests {
-    use crate::{part1, part2};
+    use crate::*;
 
     const EXAMPLE: &str = "3-5
 10-14

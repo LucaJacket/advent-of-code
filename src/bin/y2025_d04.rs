@@ -55,13 +55,13 @@ impl Extension for Grid<char> {
 }
 
 fn part1(input: &str) -> usize {
-    let grid = Grid::parse(input);
+    let grid: Grid<char> = Grid::parse(input);
 
     grid.accessible().count()
 }
 
 fn part2(input: &str) -> usize {
-    let mut grid = Grid::parse(input);
+    let mut grid: Grid<char> = Grid::parse(input);
 
     repeat_with(move || grid.remove())
         .take_while(|&removed| removed > 0)
@@ -70,7 +70,7 @@ fn part2(input: &str) -> usize {
 
 #[cfg(test)]
 mod tests {
-    use crate::{part1, part2};
+    use crate::*;
 
     const EXAMPLE: &str = "..@@.@@@@.
 @@@.@.@.@@

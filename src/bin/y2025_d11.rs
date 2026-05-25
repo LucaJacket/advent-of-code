@@ -113,7 +113,7 @@ fn part2(input: &str) -> usize {
 
 #[cfg(test)]
 mod tests {
-    use crate::{part1, part2};
+    use crate::*;
 
     const EXAMPLE1: &str = "aaa: you hhh
 you: bbb ccc

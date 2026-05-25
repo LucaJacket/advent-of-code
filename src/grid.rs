@@ -1,4 +1,4 @@
-use crate::point::{Point2D, DIRS4, DIRS8};
+use crate::point::{DIRS4, DIRS8, Point2D};
 use std::ops::{Index, IndexMut};
 
 #[derive(Clone, PartialEq, Eq, Hash, Debug)]
@@ -37,6 +37,26 @@ impl<T> Grid<T> {
 
     pub fn neighbors8(&self, point: Point2D) -> impl Iterator<Item = Point2D> {
         self.neighbors(point, DIRS8)
+    }
+
+    pub fn row(&self, row: isize) -> Vec<T>
+    where
+        T: Clone,
+    {
+        let w = self.width as isize;
+        (0..w)
+            .map(move |x| self[Point2D::new(x, row)].clone())
+            .collect()
+    }
+
+    pub fn col(&self, col: isize) -> Vec<T>
+    where
+        T: Clone,
+    {
+        let h = self.height as isize;
+        (0..h)
+            .map(move |y| self[Point2D::new(col, y)].clone())
+            .collect()
     }
 }
 

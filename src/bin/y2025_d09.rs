@@ -50,17 +50,22 @@ impl Extension for Grid<Cell> {
 
             let [start_x, end_x, start_y, end_y] = Point2D::bounds(a, b);
 
-            for y in start_y..=end_y {
-                self[Point2D::new(start_x, y)] = Cell::Border;
-            }
-            for x in start_x..=end_x {
-                self[Point2D::new(x, start_y)] = Cell::Border;
+            if start_x == end_x {
+                for y in start_y..=end_y {
+                    self[Point2D::new(start_x, y)] = Cell::Border;
+                }
+            } else if start_y == end_y {
+                for x in start_x..=end_x {
+                    self[Point2D::new(x, start_y)] = Cell::Border;
+                }
+            } else {
+                unreachable!();
             }
         }
     }
 
     fn flood_fill(&mut self, start: Point2D) {
-        let mut queue = VecDeque::new();
+        let mut queue: VecDeque<Point2D> = VecDeque::new();
         queue.push_back(start);
         while let Some(point) = queue.pop_front() {
             if self[point] != Cell::Inside {
@@ -76,7 +81,7 @@ impl Extension for Grid<Cell> {
     }
 
     fn summed_area_table(&self) -> Grid<u64> {
-        let mut table = Grid::new(self.width + 1, self.height + 1, 0);
+        let mut table: Grid<u64> = Grid::new(self.width + 1, self.height + 1, 0);
 
         for (x, y) in cartesian_pairs(self.width, self.height) {
             let point = Point2D::new(x as isize, y as isize);
@@ -94,7 +99,7 @@ impl Extension for Grid<Cell> {
 }
 
 fn part1(input: &str) -> isize {
-    let tiles = input.lines().map(Point2D::parse).collect::<Vec<_>>();
+    let tiles: Vec<Point2D> = input.lines().map(Point2D::parse).collect();
 
     unordered_pairs(tiles.len())
         .map(|(i, j)| Point2D::rectangle_area(tiles[i], tiles[j]))
@@ -103,15 +108,15 @@ fn part1(input: &str) -> isize {
 }
 
 fn part2(input: &str) -> isize {
-    let tiles = input.lines().map(Point2D::parse).collect::<Vec<_>>();
+    let tiles: Vec<Point2D> = input.lines().map(Point2D::parse).collect();
 
     let compressor = Compressor::new(&tiles);
-    let compressed_tiles = tiles
+    let compressed_tiles: Vec<Point2D> = tiles
         .iter()
         .map(|&tile| compressor.compress(tile))
-        .collect::<Vec<_>>();
+        .collect();
 
-    let mut compressed_grid = compressor.grid(Cell::Inside);
+    let mut compressed_grid: Grid<Cell> = compressor.grid(Cell::Inside);
     compressed_grid.draw_perimeter(&compressed_tiles);
     compressed_grid.flood_fill(Point2D::new(0, 0));
     let table = compressed_grid.summed_area_table();
@@ -135,7 +140,7 @@ fn part2(input: &str) -> isize {
 
 #[cfg(test)]
 mod tests {
-    use crate::{part1, part2};
+    use crate::*;
 
     const EXAMPLE: &str = "7,1
 11,1

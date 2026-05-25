@@ -11,6 +11,7 @@ pub fn parse_from_digits(digits: impl IntoIterator<Item = char>) -> u64 {
     digits
         .into_iter()
         .collect::<String>()
+        .trim()
         .parse::<u64>()
         .unwrap()
 }

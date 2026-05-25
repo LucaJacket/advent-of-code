@@ -27,7 +27,7 @@ fn main() {
 }
 
 fn build_connections(junctions: &[Point3D]) -> Vec<(usize, usize)> {
-    let mut connections = unordered_pairs(junctions.len()).collect::<Vec<_>>();
+    let mut connections: Vec<(usize, usize)> = unordered_pairs(junctions.len()).collect();
     connections.sort_unstable_by_key(|&(i, j)| {
         Point3D::straight_distance_squared(junctions[i], junctions[j])
     });
@@ -36,14 +36,14 @@ fn build_connections(junctions: &[Point3D]) -> Vec<(usize, usize)> {
 }
 
 fn part1(input: &str, connection_count: usize) -> usize {
-    let junctions = input.lines().map(Point3D::parse).collect::<Vec<_>>();
+    let junctions: Vec<Point3D> = input.lines().map(Point3D::parse).collect();
     let connections = build_connections(&junctions);
 
     let mut union_find = UnionFind::new(junctions.len());
     for (i, j) in connections.into_iter().take(connection_count) {
         union_find.union(i, j);
     }
-    let mut sizes = vec![0; junctions.len()];
+    let mut sizes: Vec<usize> = vec![0; junctions.len()];
     for i in 0..junctions.len() {
         let root = union_find.find(i);
         sizes[root] += 1;
@@ -54,7 +54,7 @@ fn part1(input: &str, connection_count: usize) -> usize {
 }
 
 fn part2(input: &str) -> isize {
-    let junctions = input.lines().map(Point3D::parse).collect::<Vec<_>>();
+    let junctions: Vec<Point3D> = input.lines().map(Point3D::parse).collect::<Vec<_>>();
     let connections = build_connections(&junctions);
 
     let mut result = 0;
@@ -71,7 +71,7 @@ fn part2(input: &str) -> isize {
 
 #[cfg(test)]
 mod tests {
-    use crate::{part1, part2};
+    use crate::*;
 
     const EXAMPLE: &str = "162,817,812
 57,618,57

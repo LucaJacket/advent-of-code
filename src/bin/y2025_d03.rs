@@ -55,7 +55,7 @@ fn part2(input: &str) -> u64 {
 
 #[cfg(test)]
 mod tests {
-    use crate::{part1, part2};
+    use crate::*;
 
     const EXAMPLE: &str = "987654321111111
 811111111111119

@@ -55,13 +55,13 @@ impl Extension for Grid<char> {
 }
 
 fn part1(input: &str) -> usize {
-    let grid: Grid<char> = Grid::parse(input);
+    let grid: Grid<char> = Grid::from_chars(input);
 
     grid.accessible().count()
 }
 
 fn part2(input: &str) -> usize {
-    let mut grid: Grid<char> = Grid::parse(input);
+    let mut grid: Grid<char> = Grid::from_chars(input);
 
     repeat_with(move || grid.remove())
         .take_while(|&removed| removed > 0)

@@ -37,7 +37,7 @@ impl Shape {
     fn parse(value: &str) -> Self {
         let (index, points) = value.split_once(":\n").unwrap();
         let index = index.parse::<usize>().unwrap();
-        let points = Grid::parse(points);
+        let points = Grid::from_chars(points);
 
         Self { index, points }
     }

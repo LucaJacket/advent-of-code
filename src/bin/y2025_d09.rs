@@ -81,7 +81,7 @@ impl Extension for Grid<Cell> {
     }
 
     fn summed_area_table(&self) -> Grid<u64> {
-        let mut table: Grid<u64> = Grid::new(self.width + 1, self.height + 1, 0);
+        let mut table: Grid<u64> = Grid::fill(0, self.width + 1, self.height + 1);
 
         for (x, y) in cartesian_pairs(self.width, self.height) {
             let point = Point2D::new(x as isize, y as isize);

@@ -6,9 +6,11 @@
 //! Part 2:
 //! - sort the ranges by start
 //! - create a new Vec
-//! - for each range:
-//!   if it overlaps with the last range, extend the last range
-//!   else add the range
+//! - take the first range as current
+//! - for each next range:
+//!   if it overlaps with the current range, extend the current range
+//!   else add the current range and next becomes new current
+//! - finally, add the current range
 //!
 
 use advent_of_code::common::read_input;
@@ -31,16 +33,20 @@ fn parse_range(range: &str) -> RangeInclusive<u64> {
 fn merge_ranges(mut ranges: Vec<RangeInclusive<u64>>) -> Vec<RangeInclusive<u64>> {
     ranges.sort_unstable_by_key(|range| *range.start());
 
-    ranges.into_iter().fold(Vec::new(), |mut merged, range| {
-        match merged.last_mut() {
-            Some(current) if current.contains(range.start()) => {
-                let end = (*current.end()).max(*range.end());
-                *current = (*current.start())..=end
-            }
-            _ => merged.push(range),
+    let mut merged: Vec<RangeInclusive<u64>> = Vec::with_capacity(ranges.len());
+    let mut ranges = ranges.into_iter();
+    let mut current = ranges.next().unwrap();
+    for next in ranges {
+        if current.contains(next.start()) {
+            current = (*current.start())..=(*current.end()).max(*next.end());
+        } else {
+            merged.push(current);
+            current = next;
         }
-        merged
-    })
+    }
+    merged.push(current);
+
+    merged
 }
 
 fn part1(input: &str) -> usize {

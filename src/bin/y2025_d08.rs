@@ -37,14 +37,15 @@ fn build_connections(junctions: &[Point3D]) -> Vec<(usize, usize)> {
 
 fn part1(input: &str, connection_count: usize) -> usize {
     let junctions: Vec<Point3D> = input.lines().map(Point3D::parse).collect();
+    let n = junctions.len();
     let connections = build_connections(&junctions);
 
-    let mut union_find = UnionFind::new(junctions.len());
+    let mut union_find = UnionFind::new(n);
     for (i, j) in connections.into_iter().take(connection_count) {
         union_find.union(i, j);
     }
-    let mut sizes: Vec<usize> = vec![0; junctions.len()];
-    for i in 0..junctions.len() {
+    let mut sizes: Vec<usize> = vec![0; n];
+    for i in 0..n {
         let root = union_find.find(i);
         sizes[root] += 1;
     }
@@ -54,11 +55,12 @@ fn part1(input: &str, connection_count: usize) -> usize {
 }
 
 fn part2(input: &str) -> isize {
-    let junctions: Vec<Point3D> = input.lines().map(Point3D::parse).collect::<Vec<_>>();
+    let junctions: Vec<Point3D> = input.lines().map(Point3D::parse).collect();
+    let n = junctions.len();
     let connections = build_connections(&junctions);
 
     let mut result = 0;
-    let mut union_find = UnionFind::new(junctions.len());
+    let mut union_find = UnionFind::new(n);
 
     for (i, j) in connections.into_iter() {
         if union_find.union(i, j) {

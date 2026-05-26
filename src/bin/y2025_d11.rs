@@ -32,24 +32,22 @@ impl Extension for HashMap<&str, Vec<&str>> {
         let mut in_degree = HashMap::new();
         for (&device, outputs) in self.iter() {
             in_degree.entry(device).or_insert(0);
-
             for &output in outputs {
                 *in_degree.entry(output).or_insert(0) += 1;
             }
         }
 
         let mut order = Vec::new();
-        let mut queue = VecDeque::new();
-        for (&device, &degree) in &in_degree {
-            if degree == 0 {
-                queue.push_back(device);
-            }
-        }
+        let mut queue: VecDeque<&str> = in_degree
+            .iter()
+            .filter(|&(_, &degree)| degree == 0)
+            .map(|(&device, _)| device)
+            .collect();
         while let Some(device) = queue.pop_front() {
             order.push(device);
             if let Some(outputs) = self.get(device) {
                 for &output in outputs {
-                    let degree = in_degree.get_mut(output).unwrap();
+                    let degree = in_degree.entry(output).or_insert(0);
                     *degree -= 1;
                     if *degree == 0 {
                         queue.push_back(output);
@@ -65,19 +63,22 @@ impl Extension for HashMap<&str, Vec<&str>> {
         let mut paths = HashMap::new();
 
         paths.insert(start, 1);
-        order
+        for &device in order
             .iter()
             .skip_while(|&&device| device != start)
             .take_while(|&&device| device != end)
-            .for_each(|&device| {
-                if let Some(&path_count) = paths.get(device)
-                    && let Some(outputs) = self.get(device)
-                {
-                    for &output in outputs {
-                        *paths.entry(output).or_insert(0) += path_count;
-                    }
-                }
-            });
+        {
+            let Some(&path_count) = paths.get(device) else {
+                continue;
+            };
+            let Some(outputs) = self.get(device) else {
+                continue;
+            };
+
+            for &output in outputs {
+                *paths.entry(output).or_insert(0) += path_count;
+            }
+        }
 
         *paths.get(end).unwrap_or(&0)
     }

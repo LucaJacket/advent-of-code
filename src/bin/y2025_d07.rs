@@ -55,15 +55,13 @@ fn step(current: &[usize], splitters: &[char]) -> (Vec<usize>, usize) {
 }
 
 fn part1(input: &str) -> usize {
-    let levels: Grid<char> = Grid::parse(input);
-
+    let levels: Grid<char> = Grid::from_chars(input);
     let start: Vec<usize> = levels
-        .row(0)
-        .into_iter()
-        .map(|ch| (ch == START) as usize)
+        .iter_row(0)
+        .map(|&ch| (ch == START) as usize)
         .collect();
     (1..levels.height as isize)
-        .map(|row| levels.row(row))
+        .map(|row| levels.iter_row(row).copied().collect::<Vec<char>>())
         .scan(start, |current, splitters| {
             let (next, splittings) = step(current, &splitters);
             *current = next;
@@ -73,15 +71,14 @@ fn part1(input: &str) -> usize {
 }
 
 fn part2(input: &str) -> usize {
-    let levels: Grid<char> = Grid::parse(input);
+    let levels: Grid<char> = Grid::from_chars(input);
 
     let start: Vec<usize> = levels
-        .row(0)
-        .into_iter()
-        .map(|ch| (ch == START) as usize)
+        .iter_row(0)
+        .map(|&ch| (ch == START) as usize)
         .collect();
     (1..levels.height as isize)
-        .map(|row| levels.row(row))
+        .map(|row| levels.iter_row(row).copied().collect::<Vec<char>>())
         .fold(start, |current, splitters| {
             let (next, _) = step(&current, &splitters);
             next

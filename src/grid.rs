@@ -1,4 +1,4 @@
-use crate::point::{DIRS4, DIRS8, Point2D};
+use crate::point::{Point2D, DIRS4, DIRS8};
 use std::ops::{Index, IndexMut};
 
 #[derive(Clone, PartialEq, Eq, Hash, Debug)]
@@ -9,7 +9,15 @@ pub struct Grid<T> {
 }
 
 impl<T> Grid<T> {
-    pub fn new(width: usize, height: usize, default: T) -> Self
+    pub fn new(data: Vec<T>, width: usize, height: usize) -> Grid<T> {
+        Self {
+            data,
+            width,
+            height,
+        }
+    }
+
+    pub fn fill(default: T, width: usize, height: usize) -> Self
     where
         T: Clone,
     {
@@ -18,6 +26,16 @@ impl<T> Grid<T> {
             width,
             height,
         }
+    }
+
+    pub fn find(&self, target: T) -> Option<Point2D>
+    where
+        T: PartialEq,
+    {
+        let (w, h) = (self.width as isize, self.height as isize);
+        (0..w)
+            .flat_map(move |x| (0..h).map(move |y| Point2D::new(x, y)))
+            .find(|&point| self[point] == target)
     }
 
     fn neighbors(
@@ -39,24 +57,14 @@ impl<T> Grid<T> {
         self.neighbors(point, DIRS8)
     }
 
-    pub fn row(&self, row: isize) -> Vec<T>
-    where
-        T: Clone,
-    {
+    pub fn iter_row(&self, row: isize) -> impl DoubleEndedIterator<Item = &T> {
         let w = self.width as isize;
-        (0..w)
-            .map(move |x| self[Point2D::new(x, row)].clone())
-            .collect()
+        (0..w).map(move |x| &self[Point2D::new(x, row)])
     }
 
-    pub fn col(&self, col: isize) -> Vec<T>
-    where
-        T: Clone,
-    {
+    pub fn iter_col(&self, col: isize) -> impl DoubleEndedIterator<Item = &T> {
         let h = self.height as isize;
-        (0..h)
-            .map(move |y| self[Point2D::new(col, y)].clone())
-            .collect()
+        (0..h).map(move |y| &self[Point2D::new(col, y)])
     }
 }
 
@@ -75,13 +83,32 @@ impl<T> IndexMut<Point2D> for Grid<T> {
 }
 
 impl Grid<char> {
-    pub fn parse(value: &str) -> Self {
-        let raw: Vec<Vec<char>> = value.lines().map(|line| line.chars().collect()).collect();
+    pub fn from_chars(value: &str) -> Self {
+        let data: Vec<char> = value.lines().flat_map(|line| line.chars()).collect();
+        let width = value
+            .lines()
+            .next()
+            .map(|line| line.chars().count())
+            .unwrap_or(0);
+        let height = if width == 0 { 0 } else { data.len() / width };
 
-        Self {
-            data: raw.concat(),
-            width: raw[0].len(),
-            height: raw.len(),
-        }
+        Self::new(data, width, height)
+    }
+}
+
+impl<'a> Grid<&'a str> {
+    pub fn split_whitespace(value: &'a str) -> Self {
+        let data: Vec<&str> = value
+            .lines()
+            .flat_map(|line| line.split_whitespace())
+            .collect();
+        let width = value
+            .lines()
+            .next()
+            .map(|line| line.split_whitespace().count())
+            .unwrap_or(0);
+        let height = if width == 0 { 0 } else { data.len() / width };
+
+        Self::new(data, width, height)
     }
 }

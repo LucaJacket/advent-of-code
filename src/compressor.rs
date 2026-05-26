@@ -36,6 +36,6 @@ impl Compressor {
     where
         T: Clone,
     {
-        Grid::new(self.unique_x.len(), self.unique_y.len(), default)
+        Grid::fill(default, self.unique_x.len(), self.unique_y.len())
     }
 }

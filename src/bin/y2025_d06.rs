@@ -1,19 +1,23 @@
 //!
-//! Helpers: grid, point
+//! Helpers: grid
 //!
 //! Approach:
-//! - parse table
-//! - split into sub-tables: horizontal bounds are given by operators on last row
-//! - for each subtable: extract operator, extract operands (by row), compute result
+//! - treat operators row differently
+//! - parse table based on split_whitespace
+//! - pair each column of operands with its corresponding operator
+//! - for each pair, solve
 //! - finally, sum
 //!
 //! Part 2:
-//! - change extract operands (by col)
+//! - parse table
+//! - parse each column as an operand: an empty column should fail parsing, so it is a sentinel of
+//!   where to split the groups of operands
+//! - for each operator, group the operands and solve
+//! - finally, sum
 //!
 
-use advent_of_code::common::{parse_from_digits, read_input};
+use advent_of_code::common::read_input;
 use advent_of_code::grid::Grid;
-use advent_of_code::point::Point2D;
 
 fn main() {
     let input = read_input(2025, 6);
@@ -22,76 +26,57 @@ fn main() {
     println!("Part 2: {}", part2(&input));
 }
 
-trait Extension {
-    fn solve<F, I>(&self, extract_operands: F) -> u64
-    where
-        F: Fn(isize, isize) -> I,
-        I: Iterator<Item = u64>;
-
-    fn solve_by_rows(&self) -> u64;
-    fn solve_by_columns(&self) -> u64;
-}
-
-impl Extension for Grid<char> {
-    fn solve<F, I>(&self, extract_operands: F) -> u64
-    where
-        F: Fn(isize, isize) -> I,
-        I: Iterator<Item = u64>,
-    {
-        let (w, h) = (self.width as isize, self.height as isize);
-        (0..w)
-            .rev()
-            .filter(|&x| !self[Point2D::new(x, h - 1)].is_whitespace())
-            .scan(self.width as isize, |right_bound, left_bound| {
-                let horizontal_bounds = (left_bound, *right_bound);
-                *right_bound = left_bound - 1;
-                Some(horizontal_bounds)
-            })
-            .map(|(left_bound, right_bound)| {
-                let operator = self[Point2D::new(left_bound, h - 1)];
-                let operands = extract_operands(left_bound, right_bound);
-                match operator {
-                    '+' => operands.sum::<u64>(),
-                    '*' => operands.product::<u64>(),
-                    _ => unreachable!(),
-                }
-            })
-            .sum()
-    }
-
-    fn solve_by_rows(&self) -> u64 {
-        let h = self.height as isize;
-        let operands_by_row = |left_bound: isize, right_bound: isize| {
-            (0..h - 1).map(move |y| {
-                let (l, r) = (left_bound as usize, right_bound as usize);
-                let digits: &[char] = &self.row(y)[l..r];
-                parse_from_digits(digits.iter().copied())
-            })
-        };
-        self.solve(operands_by_row)
-    }
-
-    fn solve_by_columns(&self) -> u64 {
-        let operands_by_column = |left_bound: isize, right_bound: isize| {
-            (left_bound..right_bound).map(move |x| {
-                let digits: &[char] = &self.col(x);
-                parse_from_digits(digits.iter().copied())
-            })
-        };
-        self.solve(operands_by_column)
-    }
-}
+const SUM: &str = "+";
+const PRODUCT: &str = "*";
 
 fn part1(input: &str) -> u64 {
-    let table: Grid<char> = Grid::parse(input);
+    let (operands, operators) = input.rsplit_once('\n').unwrap();
+    let operators = operators.split_whitespace();
+    let table: Grid<&str> = Grid::split_whitespace(operands);
 
-    table.solve_by_rows()
+    let cols = (0..table.width as isize).map(|x| {
+        table
+            .iter_col(x)
+            .map(|&operand| operand.parse::<u64>().unwrap())
+    });
+    cols.zip(operators)
+        .map(|(operands, operator)| match operator {
+            SUM => operands.sum::<u64>(),
+            PRODUCT => operands.product::<u64>(),
+            _ => {
+                println!("{}", operator);
+                unreachable!()
+            }
+        })
+        .sum()
 }
 
 fn part2(input: &str) -> u64 {
-    let table: Grid<char> = Grid::parse(input);
+    let (operands, operators) = input.rsplit_once('\n').unwrap();
+    let operators = operators.split_whitespace();
+    let table: Grid<char> = Grid::from_chars(operands);
 
-    table.solve_by_columns()
+    let mut cols = (0..table.width as isize).map(|x| {
+        table
+            .iter_col(x)
+            .collect::<String>()
+            .trim()
+            .parse::<u64>()
+            .ok()
+    });
+    operators
+        .map(|operator| {
+            let operands = cols.by_ref().map_while(|operand| operand);
+            match operator {
+                SUM => operands.sum::<u64>(),
+                PRODUCT => operands.product::<u64>(),
+                _ => {
+                    println!("{}", operator);
+                    unreachable!()
+                }
+            }
+        })
+        .sum()
 }
 
 #[cfg(test)]
